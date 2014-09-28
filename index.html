@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>d3 lab</title>
+    <script src="d3.js"></script>
+    <style>
+        body {
+            font: 10px sans-serif;
+            margin: 0;
+        }
+
+        path.line {
+            fill: none;
+            stroke: #666;
+            stroke-width: 1.5px;
+        }
+
+        path.area {
+            fill: #e7e7e7;
+        }
+
+        .axis {
+            shape-rendering: crispEdges;
+        }
+
+        .x.axis line {
+            stroke: #ccc;
+        }
+
+        .x.axis .minor {
+            stroke-opacity: .5;
+        }
+
+        .x.axis path {
+            display: none;
+        }
+
+        .y.axis line, .y.axis path {
+            fill: none;
+            stroke: #000;
+        }
+
+    </style>
+</head>
+<body>
+
+
+<div id="container">
+
+</div>
+
+
+<script>
+    var margin = {top: 80, right: 80, bottom: 80, left: 80},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+    var parse = d3.time.format("%b %Y").parse;
+
+
+    var click = function(){
+        var curDomain = x.domain();
+        x.domain([new Date(2001, 0,1), new Date(2001, 2 ,1)]);
+        var t = svg.transition().duration(750);
+        t.select(".x.axis").call(xAxis);
+    }
+
+    // Scales and axes. Note the inverted domain for the y-scale: bigger is up!
+    var x = d3.time.scale().range([0, width]),
+            xAxis = d3.svg.axis().scale(x).tickSize(-height).tickSubdivide(true)
+
+    x.domain([new Date(2001, 0,1), new Date(2010, 0,1)]);
+
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .on("click", click);
+
+
+    svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+</script>
+</body>
+</html>
