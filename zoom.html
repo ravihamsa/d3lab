@@ -76,7 +76,6 @@
     var generateData = function () {
 
         var arr = [];
-        var startDate = new Date(2014, 9, 1);
         var startYear = 2014;
 
         for (var i = 0; i < 50; i++) {
@@ -87,7 +86,8 @@
             arr.push({
                 name: 'name_' + i,
                 date: new Date(year, month, day),
-                wsIndex: wsIndex
+                wsIndex: wsIndex,
+                type:Math.floor(Math.random() * 3)
             })
         }
 
@@ -120,21 +120,14 @@
             height = 500 - margin.top - margin.bottom,
             rectHeight = wsCount * wsHeight;
 
-    var parseDate = d3.time.format("%Y-%m-%d").parse,
-            formatDate = d3.time.format("%Y");
-
 
 
 
     var x = d3.time.scale()
-            .range([0, width]);
+            .range([0, width]).domain([new Date(), new Date(2020, 11, 31)]);;
 
     var y = d3.scale.linear()
             .range([0, wsCount*wsHeight]).domain([0,wsCount]);
-
-
-
-    x.domain([new Date(), new Date(2020, 11, 31)]);
 
 
     var xAxis = d3.svg.axis()
@@ -144,6 +137,7 @@
             .tickPadding(6);
 
     var workStreamNames = ['Work Stream1', 'Work Stream2', 'Work Stream3', 'Work Stream4', 'Work Stream5', 'Work Stream6' ];
+    var mileStoneTypes = ['E', 'P', 'W' ];
 
     var yAxisTransform = function(d){
         var translateY = y(0) + (d.wsIndex*150);
@@ -225,17 +219,22 @@
             .attr("class", "mile-stone")
             .call(dragListener)
 
+    var colorFun =  d3.scale.category10()
 
     milestones.append('rect')
             .attr("x", -10)
             .attr("y",-10)
             .attr("width", 20)
             .attr("height", 20)
+            .attr("fill",function(d){
+                return colorFun(d.type);
+            })
             .on('click', mileStoneClick)
 
 
     milestones.append('text')
-            .text(function(d){return d.wsIndex})
+            .text(function(d){return mileStoneTypes[d.type]})
+            .attr('text-anchor', 'middle')
             .attr('dx',0)
             .attr('dy',0)
 
