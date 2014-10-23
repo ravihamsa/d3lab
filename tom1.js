@@ -32,13 +32,24 @@
         return arr;
     };
 
+    var getWorkStreamData = function(workStreamCount){
+        var data = [];
+        for(var i = 0; i<workStreamCount; i++){
+            data.push({
+                name:'workStream_'+i,
+                milestones:[]
+            })
+        }
+        return data;
+    }
+
 
     var generateTimeLineData = function (startYear, startMonth, startDay, dayCount, steps) {
         var data = [];
-        for (var i = 0; i < dayCount; i+=steps) {
+        for (var i = 0, counter=0; counter < dayCount; i+=steps) {
             var date = new Date(startYear, startMonth, startDay + i);
             var day = date.getDay();
-            //if(day !== 0  &&  day !== 6){
+            if(day !== 0  &&  day !== 6){
                 data.push({
                     id: date.getDate() + '_' + date.getMonth() + '_' + date.getFullYear(),
                     day: date.getDay(),
@@ -46,8 +57,9 @@
                     month: date.getMonth(),
                     year: date.getFullYear()
                 })
-            //}
-            //console.log(day, date.getDate() + '_' + date.getMonth() + '_' + date.getFullYear())
+                counter ++;
+            }
+            ///console.log(day, i, dayCount, date.getDate() + '_' + date.getMonth() + '_' + date.getFullYear())
 
         }
         return data;
@@ -190,39 +202,92 @@
 
 
     var renderGrid = function(root){
-        var workStreamCount = 3;
+        var workStreamData = getWorkStreamData(3)
+        var workStreamCount = workStreamData.length;
         var rowCount = workStreamCount * 3;
         var rootWidth = parseInt(root.style('width'));
         var visibleTimeLineDays = Math.ceil(rootWidth / dayWidth);
         var colCount = visibleTimeLineDays;
         var colorFun =  d3.scale.category10()
 
-        root.style('height', (rowCount*dayWidth)+'px')
 
-        var rowContainer = root.append('div')
+
+        var svg = root.append('svg')
+            .attr('width', rootWidth+30)
+            .attr('height', rowCount*dayWidth)
+
+
+
+        svg.append('rect')
+            .attr('width', rootWidth)
+            .attr('height', rowCount*dayWidth)
+            .attr('stroke', '#333')
+            .attr('fill', 'transparent')
+            .attr('x', 30)
+            //.attr('transform', 'translate(30,0)');
+
+
+
+
+
+        var rowContainer = svg.append('g')
             .attr('class', 'rows')
+            .attr('transform', 'translate(30,0)');
 
 
-        var colContainer = root.append('div')
+        var colContainer = svg.append('g')
             .attr('class', 'columns')
+            .attr('transform', 'translate(30,0)');
 
 
-        var rows = rowContainer.selectAll('div.row')
-            .data(_.range(0,rowCount))
+        var rows = rowContainer.selectAll('g.row')
+            .data(workStreamData)
             .enter()
-            .append('div')
+            .append('g')
             .attr('class', 'row')
-            .style('width', (visibleTimeLineDays*dayWidth)+'px')
-            .style('height', (3*dayWidth)+'px')
-            //.style('background-color', function(d){return colorFun(d)})
+            .attr('transform', function(data, index){
+                var y = index * 3 * dayWidth;
+                return 'translate(0, '+y+')';
+            })
 
-        var cols = colContainer.selectAll('div.col')
+        rows.append('path')
+            .attr('d', function(data, index){
+                var y = 0
+                return 'M -30 '+y+' L '+((visibleTimeLineDays*dayWidth)+30)+' '+y;
+            })
+
+        rows.append('text')
+            .text(function(d){
+                return d.name;
+            })
+            .attr('fill', '#333')
+            .attr('dx', -10)
+            .attr('dy', -10)
+            .style("text-anchor", "end")
+            .attr("transform", function(d) {
+                return "rotate(-90)"
+            });
+
+            //.attr('y', function(d){return d * 3 * dayWidth})
+            //.attr('width', (visibleTimeLineDays*dayWidth))
+            //.attr('height', (3*dayWidth))
+            //.attr('fill', function(d){return colorFun(d)})
+
+        var cols = colContainer.selectAll('path.col')
             .data(_.range(0,colCount))
             .enter()
-            .append('div')
+            .append('path')
             .attr('class', 'col')
-            .style('width', (dayWidth)+'px')
-            .style('height', (rowCount*dayWidth)+'px')
+            .attr('d', function(d){
+                var x = d*dayWidth;
+                return 'M '+x+' 0 L '+x+' '+(rowCount*dayWidth);
+            })
+
+            //.attr('x', function(d){return d*dayWidth})
+            //.attr('width', (dayWidth))
+            //.attr('height', (rowCount*dayWidth))
+            //.attr('fill', function(d){return colorFun(d)})
+            //.attr('opacity', 0.2)
 
     }
 

@@ -15,10 +15,8 @@ html * {
   color: #fff;
 }
 .lbp-container .time-table {
-  margin-left: 20%;
+  margin-left: 15%;
   width: 80%;
-  border: 1px solid #ccc;
-  overflow: hidden;
   position: relative;
 }
 .lbp-container .time-table .rows {
@@ -31,11 +29,12 @@ html * {
   left: 0;
 }
 .lbp-container .time-table .row {
-  border-bottom: 1px solid #ccc;
+  stroke: #ccc;
+  stroke-width: 0.5;
 }
 .lbp-container .time-table .col {
-  display: inline-block;
-  border-right: 1px solid #ccc;
+  stroke: #ccc;
+  stroke-width: 0.5;
 }
 .lbp-container .year-line {
   background-color: #000000;
