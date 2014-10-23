@@ -1,0 +1,86 @@
+html * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+.lbp-container {
+  font-size: 11px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+.lbp-container .time-line {
+  overflow: hidden;
+  width: 80%;
+  margin-left: 20%;
+  border: 1px solid #ccc;
+}
+.lbp-container .time-table {
+  margin-left: 20%;
+  width: 80%;
+  border: 1px solid #ccc;
+  overflow: hidden;
+  position: relative;
+}
+.lbp-container .time-table .rows {
+  white-space: nowrap;
+}
+.lbp-container .time-table .columns {
+  position: absolute;
+  white-space: nowrap;
+  top: 0;
+  left: 0;
+}
+.lbp-container .time-table .row {
+  height: 20px;
+  border-bottom: 1px solid #ccc;
+}
+.lbp-container .time-table .col {
+  width: 20px;
+  display: inline-block;
+  border-right: 1px solid #ccc;
+}
+.lbp-container .year-line,
+.lbp-container .month-line,
+.lbp-container .day-line {
+  white-space: nowrap;
+}
+.lbp-container .year-line .year,
+.lbp-container .month-line .month,
+.lbp-container .day-line .day {
+  display: inline-block;
+  text-align: center;
+  border-right: 1px solid #ccc;
+  padding: 4px 0;
+}
+.lbp-container .year-line,
+.lbp-container .month-line {
+  border-bottom: 1px solid #ccc;
+}
+.lbp-container .day {
+  width: 20px;
+  border-left: 0;
+}
+.lbp-container .day.d6,
+.lbp-container .day.d0 {
+  background-color: #ccc;
+}
+.lbp-container .day-list {
+  display: inline-block;
+  width: 20px;
+}
+.lbp-container .day-list .day {
+  display: block;
+  height: 20px;
+  border-bottom: 1px solid #ccc;
+}
+.lbp-container .scroll-bar {
+  width: 80%;
+  margin-left: 20%;
+  border: 1px solid #ccc;
+  background-color: #efefcc;
+}
+.lbp-container .scroll-bar .scroll-thumb {
+  height: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #e7e7e7;
+}
