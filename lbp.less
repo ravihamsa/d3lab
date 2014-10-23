@@ -12,6 +12,7 @@ html * {
     width:80%;
     margin-left: 20%;
     border: 1px solid #ccc;
+    color:#fff;
 
   }
 
@@ -33,15 +34,29 @@ html * {
     }
 
     .row {
-      height: 20px;
       border-bottom: 1px solid #ccc;
     }
 
     .col {
-      width:20px;
       display: inline-block;
       border-right: 1px solid #ccc;
     }
+  }
+
+  .year-line {
+    background-color: #000000;
+    font-size: 20px;
+
+  }
+
+  .month-line {
+    background-color: #333;
+    font-size: 16px;
+
+  }
+  .day-line {
+    background-color: #666;
+
   }
 
   .year-line, .month-line, .day-line {
@@ -51,37 +66,26 @@ html * {
   .year-line .year, .month-line .month, .day-line .day {
     display: inline-block;
     text-align: center;
-    border-right: 1px solid #ccc;
+    border-right: 1px solid #333333;
     padding: 4px 0;
-
   }
 
-  .year-line, .month-line {
-    border-bottom: 1px solid #ccc;
+  .year-line .year {
+    border-color: transparent;
   }
 
 
 
   .day {
-    width: 20px;
     border-left: 0;
 
   }
 
   .day.d6,  .day.d0 {
-    background-color: #ccc;
+    background-color: #111;
   }
 
-  .day-list {
-    display: inline-block;
-    width:20px;
 
-    .day {
-      display: block;
-      height: 20px;
-      border-bottom: 1px solid #ccc;
-    }
-  }
 
 
   .scroll-bar {

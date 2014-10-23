@@ -1,7 +1,8 @@
 (function(){
 
 
-    var dayWidth = 20;
+    var dayWidth = 50;
+    var dayWidth = 50;
 
     var fullTimeLineDays = 1000;
 
@@ -36,13 +37,18 @@
         var data = [];
         for (var i = 0; i < dayCount; i+=steps) {
             var date = new Date(startYear, startMonth, startDay + i);
-            data.push({
-                id: date.getDate() + '_' + date.getMonth() + '_' + date.getFullYear(),
-                day: date.getDay(),
-                date: date.getDate(),
-                month: date.getMonth(),
-                year: date.getFullYear()
-            })
+            var day = date.getDay();
+            //if(day !== 0  &&  day !== 6){
+                data.push({
+                    id: date.getDate() + '_' + date.getMonth() + '_' + date.getFullYear(),
+                    day: date.getDay(),
+                    date: date.getDate(),
+                    month: date.getMonth(),
+                    year: date.getFullYear()
+                })
+            //}
+            //console.log(day, date.getDate() + '_' + date.getMonth() + '_' + date.getFullYear())
+
         }
         return data;
     }
@@ -114,6 +120,7 @@
                 .attr('class', function (d) {
                     return 'day d' + d.day
                 })
+                .style('width', (dayWidth)+'px')
 
 
 
@@ -182,56 +189,8 @@
     }
 
 
-    var renderTimeTable = function(root){
-        var workStreamData = generateWorkStreamData();
-        var workStreams = [];
-        for(var i =0; i<3; i++){
-            workStreams.push({
-                name:'workStream_'+i,
-                milestones:[]
-            })
-        }
-
-        var rowCount = workStreams.length * 3;
-
-
-
-
-
-        var timeLineData = generateTimeLineData(2013, 0, 1, fullTimeLineDays, 1)
-        _.each(timeLineData, function(item){
-            item.rows = _.map(_.range(0,rowCount), function(item){
-                return item;
-            })
-        })
-
-
-        var dayLine = root.append('div')
-            .attr('class', 'day-line');
-
-        var dayLists = dayLine.selectAll('ul.day-list')
-            .data(timeLineData)
-
-        dayLists.enter()
-            .append('ul')
-            .attr('class', function (d) {
-                return 'day-list d' + d.day
-            })
-
-
-        var days = dayLists.selectAll('li.day')
-            .data(function(d){
-                return d.rows
-            })
-            .enter()
-            .append('li')
-            .attr('class', 'day')
-
-    };
-
-
     var renderGrid = function(root){
-        var workStreamCount = 5;
+        var workStreamCount = 3;
         var rowCount = workStreamCount * 3;
         var rootWidth = parseInt(root.style('width'));
         var visibleTimeLineDays = Math.ceil(rootWidth / dayWidth);
@@ -254,6 +213,7 @@
             .append('div')
             .attr('class', 'row')
             .style('width', (visibleTimeLineDays*dayWidth)+'px')
+            .style('height', (3*dayWidth)+'px')
             //.style('background-color', function(d){return colorFun(d)})
 
         var cols = colContainer.selectAll('div.col')
@@ -261,10 +221,8 @@
             .enter()
             .append('div')
             .attr('class', 'col')
+            .style('width', (dayWidth)+'px')
             .style('height', (rowCount*dayWidth)+'px')
-
-        console.log(rows, cols);
-
 
     }
 

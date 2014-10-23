@@ -12,6 +12,7 @@ html * {
   width: 80%;
   margin-left: 20%;
   border: 1px solid #ccc;
+  color: #fff;
 }
 .lbp-container .time-table {
   margin-left: 20%;
@@ -30,13 +31,22 @@ html * {
   left: 0;
 }
 .lbp-container .time-table .row {
-  height: 20px;
   border-bottom: 1px solid #ccc;
 }
 .lbp-container .time-table .col {
-  width: 20px;
   display: inline-block;
   border-right: 1px solid #ccc;
+}
+.lbp-container .year-line {
+  background-color: #000000;
+  font-size: 20px;
+}
+.lbp-container .month-line {
+  background-color: #333;
+  font-size: 16px;
+}
+.lbp-container .day-line {
+  background-color: #666;
 }
 .lbp-container .year-line,
 .lbp-container .month-line,
@@ -48,29 +58,18 @@ html * {
 .lbp-container .day-line .day {
   display: inline-block;
   text-align: center;
-  border-right: 1px solid #ccc;
+  border-right: 1px solid #333333;
   padding: 4px 0;
 }
-.lbp-container .year-line,
-.lbp-container .month-line {
-  border-bottom: 1px solid #ccc;
+.lbp-container .year-line .year {
+  border-color: transparent;
 }
 .lbp-container .day {
-  width: 20px;
   border-left: 0;
 }
 .lbp-container .day.d6,
 .lbp-container .day.d0 {
-  background-color: #ccc;
-}
-.lbp-container .day-list {
-  display: inline-block;
-  width: 20px;
-}
-.lbp-container .day-list .day {
-  display: block;
-  height: 20px;
-  border-bottom: 1px solid #ccc;
+  background-color: #111;
 }
 .lbp-container .scroll-bar {
   width: 80%;
