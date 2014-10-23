@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Tom Cat</title>
+    <script src="d3.js"></script>
+    <script src="underscore-min.js"></script>
+    <style>
+
+        html * {
+            box-sizing: border-box;
+        }
+
+        .day-line {
+            white-space: nowrap;
+        }
+
+        .year-line .year, .day-line .day, .month-line .month {
+            display: inline-block;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+
+        .day {
+            width: 20px;
+            border-left: 0;
+        }
+
+        .day.d6,  .day.d0 {
+            background-color: #ccc;
+        }
+
+        .day:first-child {
+            border-left: 1px solid #ccc;
+        }
+
+        #timeLine{
+            white-space: nowrap;
+            width:100%;
+            overflow:hidden;
+        }
+
+         #timeLine2 {
+             white-space: nowrap;
+             position: relative;
+             padding-top: 30px;
+         }
+
+         .time-line-container {
+             width:100%;
+             overflow: hidden;
+             position: relative;
+             height: 90px;
+         }
+
+
+         #timeLine2 .year-line {
+             position: absolute;
+             left:0;
+             top:0;
+         }
+
+          .scroll-bar {
+            width:100%;
+            border: 1px solid #ccc;
+            background-color: #efefcc;
+        }
+        .scroll-bar .scroll-thumb, .scroll-bar .scroll-thumb2 {
+            height: 20px;
+            border:1px solid #ccc;
+            border-radius: 4px;
+            background-color: #e7e7e7;
+        }
+    </style>
+</head>
+<body>
+
+<div id="timeLine">
+
+</div>
+<div class="scroll-bar">
+    <div class="scroll-thumb"></div>
+</div>
+
+<div class="time-line-container">
+    <div id="timeLine2">
+
+    </div>
+</div>
+
+<div class="scroll-bar">
+    <div class="scroll-thumb2"></div>
+</div>
+
+<script src="tom1.js"></script>
+<script src="tom2.js"></script>
+
+</body>
+</html>
