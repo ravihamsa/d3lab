@@ -1,16 +1,21 @@
 html * {
   box-sizing: border-box;
-  margin:0;
-  padding:0;
+  margin: 0;
+  padding: 0;
 }
 
 .lbp-container {
-  font-size:11px;
+  font-size: 11px;
   font-family: verdana, arial, helvetica, sans-serif;
+  position: relative;
+
+  .lbp-inner {
+    position: relative;
+  }
   .time-line {
     overflow: hidden;
     border: 1px solid #ccc;
-    color:#fff;
+    color: #fff;
 
   }
 
@@ -24,17 +29,17 @@ html * {
     .columns {
       position: absolute;
       white-space: nowrap;
-      top:0;
-      left:0;
+      top: 0;
+      left: 0;
     }
 
     .row {
-      stroke:#ccc;
+      stroke: #ccc;
       stroke-width: 0.5;
     }
 
     .col {
-      stroke:#ccc;
+      stroke: #ccc;
       stroke-width: 0.5;
     }
   }
@@ -70,26 +75,26 @@ html * {
     border-color: transparent;
   }
 
-
-
   .day {
     border-left: 0;
 
   }
 
-  .day.d6,  .day.d0 {
+  .day.d6, .day.d0 {
     background-color: #111;
   }
 
-
-
+  .grid-container {
+    position: relative;
+    overflow: hidden;
+  }
 
   .scroll-bar {
     border: 1px solid #ccc;
     background-color: #efefcc;
     .scroll-thumb {
       height: 20px;
-      border:1px solid #ccc;
+      border: 1px solid #ccc;
       border-radius: 4px;
       background-color: #e7e7e7;
     }

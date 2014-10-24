@@ -1,8 +1,6 @@
 (function () {
 
 
-
-
     var monthArray = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 
@@ -11,19 +9,29 @@
         this.fullTimelineDays = config.fullTimelineDays || 1000;
         this.dayWidth = config.dayWidth || 50;
         this.rootWidth = parseInt(this.rootEl.style('width'));
+        this.rootHeight = config.rootHeight || 400;
+
         this.visibleTimelineDays = Math.ceil(this.rootWidth / this.dayWidth);
         this.tableMargin = {
-            top: 50,
-            left: 50,
+            top: 40,
+            left: 60,
             right: 0,
-            bottom: 0
+            bottom: 50
         }
+        this.rootInnerWidth = this.rootWidth - this.tableMargin.left - this.tableMargin.right;
+        this.rootInnerHeight = this.rootHeight - this.tableMargin.top - this.tableMargin.bottom;
+
 
         this.startYear = config.startYear || 2013;
         this.startMonth = config.startMonth || 0;
         this.startDay = config.startDay || 1;
         this.scale = config.scale || 'day';
-        console.log(this);
+
+        this.rootEl.select('.lbp-inner')
+            .style('left', this.tableMargin.left + 'px')
+            .style('top', this.tableMargin.top + 'px')
+            .style('width', this.rootInnerWidth + 'px')
+        //.style('height', this.rootInnerHeight +'px')
     }
 
     LBPController.prototype = {
@@ -42,7 +50,7 @@
         getWorkStreamData: function () {
             return this.workStreamData;
         },
-        refreshTimeLineData : function(){
+        refreshTimeLineData: function () {
             var windowData = this.generateTimeLineData()
 
 
@@ -69,7 +77,7 @@
             this.yearData = yearData;
             this.monthData = monthData;
         },
-        _timeLineEnter:function(){
+        _timeLineEnter: function () {
             var years = this.timeline.years;
             var months = this.timeline.months;
             var days = this.timeline.days;
@@ -87,14 +95,11 @@
 
             days.enter()
                 .append('div')
-                .attr('class', function (d) {
-                    return 'day d' + d.day
-                })
                 .style('width', (this.dayWidth) + 'px')
 
 
         },
-        _timeLineExit: function(){
+        _timeLineExit: function () {
             var years = this.timeline.years;
             var months = this.timeline.months;
             var days = this.timeline.days;
@@ -103,7 +108,7 @@
             months.exit().remove();
             days.exit().remove();
         },
-        _timeLineUpdate: function(){
+        _timeLineUpdate: function () {
             var years = this.timeline.years;
             var months = this.timeline.months;
             var days = this.timeline.days;
@@ -123,12 +128,10 @@
                     return monthArray[d.month];
                 })
 
-
-            days.text(function (d) {
-                return d.date
-            })
+            days.text(function (d) {return d.date})
+                .attr('class', function (d) { return 'day d' + d.day })
         },
-        updateTimeLine:function(){
+        updateTimeLine: function () {
             this.refreshTimeLineData();
             var years, months, days;
 
@@ -153,7 +156,7 @@
         },
         renderTimeLine: function (root) {
 
-            var  _this = this;
+            var _this = this;
 
             var yearLine = root.append('div')
                 .attr('class', 'year-line');
@@ -165,18 +168,15 @@
                 .attr('class', 'day-line');
 
 
-
             this.refreshTimeLineData();
 
 
-
             this.timeline = {
-                yearLine:yearLine,
-                monthLine:monthLine,
-                dayLine:dayLine
+                yearLine: yearLine,
+                monthLine: monthLine,
+                dayLine: dayLine
             };
             this.updateTimeLine();
-
 
 
             var dragmove = function (d) {
@@ -192,8 +192,8 @@
                 .datum({x: 0, y: 0})
                 .call(drag);
 
-            var thumbWidth = ((this.rootWidth / this.fullTimelineDays) * this.visibleTimelineDays);
-            var activeRootWidth = this.rootWidth - thumbWidth;
+            var thumbWidth = ((this.rootInnerWidth / this.fullTimelineDays) * this.visibleTimelineDays);
+            var activeRootWidth = this.rootInnerWidth - thumbWidth;
 
             var tick = function () {
                 scrollThumb.style('transform', function (d) {
@@ -246,42 +246,47 @@
             }
             return data;
         },
-        renderGrid: function(root){
-            var workStreamData = this.getWorkStreamData(2);
+        renderGrid: function (root) {
+            var _this = this;
+            var gridExtension = 30;
+            var workStreamData = this.getWorkStreamData(4);
             var workStreamCount = workStreamData.length;
             var rowCount = workStreamCount * 3;
             var dayWidth = this.dayWidth;
-            var rootWidth = this.rootWidth;
+            var rootInnerWidth = this.rootInnerWidth;
 
-            var visibleTimeLineDays = Math.ceil(rootWidth / dayWidth);
+            var visibleTimeLineDays = Math.ceil(rootInnerWidth / dayWidth);
             var colCount = this.visibleTimelineDays;
             var colorFun = d3.scale.category10()
             var strokeWidth = 0.5;
 
+            root.style('left', -gridExtension + 'px');
+            root.style('height', this.rootInnerHeight + 'px');
+            root.style('width', (this.rootInnerWidth + gridExtension) + 'px');
 
             var svg = root.append('svg')
-                .attr('width', rootWidth + 30)
+                .attr('width', rootInnerWidth + gridExtension)
                 .attr('height', rowCount * dayWidth)
 
 
-            svg.append('rect')
-                .attr('width', rootWidth)
+            var gridRect = svg.append('rect')
+                .attr('width', rootInnerWidth)
                 .attr('height', rowCount * dayWidth)
-                .attr('stroke', '#333')
+                .attr('stroke', '#eee')
                 .attr('fill', 'transparent')
-                .attr('x', 30)
+                .attr('x', gridExtension)
                 .attr('stroke-width', strokeWidth)
             //.attr('transform', 'translate(30,0)');
 
 
             var rowContainer = svg.append('g')
                 .attr('class', 'rows')
-                .attr('transform', 'translate(30,0)');
+                .attr('transform', 'translate(' + gridExtension + ',0)');
 
 
             var colContainer = svg.append('g')
                 .attr('class', 'columns')
-                .attr('transform', 'translate(30,0)');
+                .attr('transform', 'translate(' + gridExtension + ',0)');
 
 
             var rows = rowContainer.selectAll('g.row')
@@ -297,16 +302,15 @@
             rows.append('path')
                 .attr('d', function (data, index) {
                     var y = 0
-                    return 'M -30 ' + y + ' L ' + ((visibleTimeLineDays * dayWidth) + 30) + ' ' + y;
+                    return 'M -' + gridExtension + ' ' + y + ' L ' + ((visibleTimeLineDays * dayWidth) + gridExtension) + ' ' + y;
                 })
-                .attr('stroke', '#333')
+                .attr('stroke', '#ff3300')
                 .attr('stroke-width', strokeWidth)
 
             rows.append('text')
                 .text(function (d) {
                     return d.name;
                 })
-                .attr('fill', '#333')
                 .attr('dx', -10)
                 .attr('dy', -10)
                 .style("text-anchor", "end")
@@ -328,7 +332,7 @@
                     var x = d * dayWidth;
                     return 'M ' + x + ' 0 L ' + x + ' ' + (rowCount * dayWidth);
                 })
-                .attr('stroke', '#333')
+                .attr('stroke', '#ddd')
                 .attr('stroke-width', strokeWidth)
 
             //.attr('x', function(d){return d*dayWidth})
@@ -336,166 +340,29 @@
             //.attr('height', (rowCount*dayWidth))
             //.attr('fill', function(d){return colorFun(d)})
             //.attr('opacity', 0.2)
-        }
-    }
 
 
-    var generateWorkStreamData = function () {
-
-        var year, month, day, arr, wsIndex;
-        arr = [];
-        var startYear = 2014;
-        year = Math.floor(Math.random() * 6) + startYear;
-        month = Math.floor(Math.random() * 11);
-        day = Math.floor(Math.random() * 30) + 1;
-        wsIndex = Math.floor(Math.random() * 6);
-
-        for (var i = 0; i < 50; i++) {
-
-            arr.push({
-                name: 'Milestone ' + i,
-                date: new Date(year, month, day),
-                wsIndex: wsIndex,
-                type: Math.floor(Math.random() * 3)
-            });
-        }
-
-        return arr;
-    };
-
-    var getWorkStreamData = function (workStreamCount) {
-        var data = [];
-        for (var i = 0; i < workStreamCount; i++) {
-            data.push({
-                name: 'workStream_' + i,
-                id: i,
-                milestones: []
-            })
-        }
-        return data;
-    }
-
-
-    var generateTimeLineData = function (startYear, startMonth, startDay, dayCount, steps) {
-        var data = [];
-        for (var i = 0, counter = 0; counter < dayCount; i += steps) {
-            var date = new Date(startYear, startMonth, startDay + i);
-            var day = date.getDay();
-            if (day !== 0 && day !== 6) {
-                data.push({
-                    id: date.getDate() + '_' + date.getMonth() + '_' + date.getFullYear(),
-                    day: date.getDay(),
-                    date: date.getDate(),
-                    month: date.getMonth(),
-                    year: date.getFullYear()
-                })
-                counter++;
+            var dragMove = function (d) {
+                d.x -= d3.event.dx;
+                _this.startDay = Math.floor(d.x / _this.dayWidth);
+                _this.updateTimeLine();
             }
-            ///console.log(day, i, dayCount, date.getDate() + '_' + date.getMonth() + '_' + date.getFullYear())
+
+            var dragStart = function(d){
+                d.x = _this.startDay * _this.dayWidth;
+            }
+
+            gridRect.datum({x: 0, y: 0});
+
+            var drag = d3.behavior.drag()
+                .origin(Object)
+                .on('drag', dragMove)
+                .on('dragstart', dragStart)
+
+            gridRect.call(drag);
 
         }
-        return data;
     }
-
-
-    var renderTimeLine = function (root) {
-
-        var rootWidth = parseInt(root.style('width'));
-
-        var visibleTimeLineDays = Math.ceil(rootWidth / dayWidth);
-
-
-
-
-
-    }
-
-
-    var renderGrid = function (root) {
-        var workStreamData = getWorkStreamData(3)
-        var workStreamCount = workStreamData.length;
-        var rowCount = workStreamCount * 3;
-        var rootWidth = parseInt(root.style('width'));
-        var visibleTimeLineDays = Math.ceil(rootWidth / dayWidth);
-        var colCount = visibleTimeLineDays;
-        var colorFun = d3.scale.category10()
-
-
-        var svg = root.append('svg')
-            .attr('width', rootWidth + 30)
-            .attr('height', rowCount * dayWidth)
-
-
-        svg.append('rect')
-            .attr('width', rootWidth)
-            .attr('height', rowCount * dayWidth)
-            .attr('stroke', '#333')
-            .attr('fill', 'transparent')
-            .attr('x', 30)
-        //.attr('transform', 'translate(30,0)');
-
-
-        var rowContainer = svg.append('g')
-            .attr('class', 'rows')
-            .attr('transform', 'translate(30,0)');
-
-
-        var colContainer = svg.append('g')
-            .attr('class', 'columns')
-            .attr('transform', 'translate(30,0)');
-
-
-        var rows = rowContainer.selectAll('g.row')
-            .data(workStreamData)
-            .enter()
-            .append('g')
-            .attr('class', 'row')
-            .attr('transform', function (data, index) {
-                var y = index * 3 * dayWidth;
-                return 'translate(0, ' + y + ')';
-            })
-
-        rows.append('path')
-            .attr('d', function (data, index) {
-                var y = 0
-                return 'M -30 ' + y + ' L ' + ((visibleTimeLineDays * dayWidth) + 30) + ' ' + y;
-            })
-
-        rows.append('text')
-            .text(function (d) {
-                return d.name;
-            })
-            .attr('fill', '#333')
-            .attr('dx', -10)
-            .attr('dy', -10)
-            .style("text-anchor", "end")
-            .attr("transform", function (d) {
-                return "rotate(-90)"
-            });
-
-        //.attr('y', function(d){return d * 3 * dayWidth})
-        //.attr('width', (visibleTimeLineDays*dayWidth))
-        //.attr('height', (3*dayWidth))
-        //.attr('fill', function(d){return colorFun(d)})
-
-        var cols = colContainer.selectAll('path.col')
-            .data(_.range(0, colCount))
-            .enter()
-            .append('path')
-            .attr('class', 'col')
-            .attr('d', function (d) {
-                var x = d * dayWidth;
-                return 'M ' + x + ' 0 L ' + x + ' ' + (rowCount * dayWidth);
-            })
-
-        //.attr('x', function(d){return d*dayWidth})
-        //.attr('width', (dayWidth))
-        //.attr('height', (rowCount*dayWidth))
-        //.attr('fill', function(d){return colorFun(d)})
-        //.attr('opacity', 0.2)
-
-    }
-
 
 
     //renderTimeLine(d3.select('.time-line'));
@@ -507,8 +374,8 @@
     //renderMileStones(d3.select('.mile-stones'))
 
     var lbpController = new LBPController({
-        rootEl:d3.select('.lbp-container'),
-        dayWidth:50
+        rootEl: d3.select('.lbp-container'),
+        dayWidth: 50
     })
 
     lbpController.renderLBP();

@@ -6,6 +6,10 @@ html * {
 .lbp-container {
   font-size: 11px;
   font-family: verdana, arial, helvetica, sans-serif;
+  position: relative;
+}
+.lbp-container .lbp-inner {
+  position: relative;
 }
 .lbp-container .time-line {
   overflow: hidden;
@@ -65,6 +69,10 @@ html * {
 .lbp-container .day.d6,
 .lbp-container .day.d0 {
   background-color: #111;
+}
+.lbp-container .grid-container {
+  position: relative;
+  overflow: hidden;
 }
 .lbp-container .scroll-bar {
   border: 1px solid #ccc;
