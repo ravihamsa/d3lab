@@ -1,7 +1,8 @@
 (function () {
 
 
-    var monthArray = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var monthArray = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+
 
 
     var msPerDay = 1000 * 60 * 60 * 24;
@@ -218,7 +219,7 @@
                         windowStart = Math.floor(_this.fullTimelineDays * positionPercentage);
                     }
 
-                    _this.startDay = windowStart;
+                    _this.scaleOffset = windowStart;
                     _this.updateTimeLine();
                     return 'translateX(' + xPos + 'px)';
 
@@ -229,11 +230,11 @@
 
 
         },
-        getDayTimeLineData: function(){
+        getDayTimeLineData: function () {
             var data = [];
             var steps = 1;
             for (var i = 0, counter = 0; counter < this.visibleTimelineDays; i += steps) {
-                var date = new Date(this.startYear, this.startMonth, this.startDay + i);
+                var date = new Date(this.startYear, this.startMonth, this.startDay + this.scaleOffset + i);
                 var day = date.getDay();
                 //if (day !== 0 && day !== 6) {
                 data.push({
@@ -241,18 +242,19 @@
                     day: date.getDay(),
                     date: date.getDate(),
                     month: date.getMonth(),
-                    year: date.getFullYear()
+                    year: date.getFullYear(),
+                    dateStamp:date.getTime()
                 })
                 counter++;
                 // }
             }
             return data;
         },
-        getMonthTimeLineData: function(){
+        getMonthTimeLineData: function () {
             var data = [];
             var steps = 1;
             for (var i = 0, counter = 0; counter < this.visibleTimelineDays; i += steps) {
-                var date = new Date(this.startYear, this.startMonth+i, this.startDay );
+                var date = new Date(this.startYear, this.startMonth +this.scaleOffset+ i, this.startDay);
                 var day = date.getDay();
                 //if (day !== 0 && day !== 6) {
                 data.push({
@@ -260,18 +262,16 @@
                     day: date.getDay(),
                     date: date.getDate(),
                     month: date.getMonth(),
-                    year: date.getFullYear()
+                    year: date.getFullYear(),
+                    dateStamp:date.getTime()
                 })
                 counter++;
                 // }
             }
-            console.log(data);
             return data;
         },
         generateTimeLineData: function () {
-
-
-            switch(this.scale){
+            switch (this.scale) {
                 case 'day':
                     return this.getDayTimeLineData();
                     break;
@@ -280,6 +280,46 @@
                     break;
 
             }
+        },
+        getTimeLineStartDay: function(){
+            switch (this.scale) {
+                case 'day':
+                    return new Date(this.startYear, this.startMonth, this.startDay + this.scaleOffset).getTime();
+                    break;
+                case 'month':
+                    return new Date(this.startYear, this.startMonth + this.scaleOffset, this.startDay).getTime();
+                    break;
+
+            }
+        },
+        getDateOffset: function(fromDateStamp, toDateStamp){
+            switch(this.scale){
+                case 'day':
+                    return  (toDateStamp - fromDateStamp)/msPerDay
+                    break;
+                case 'month':
+                    var fromDate = new Date(fromDateStamp);
+                    var toDate = new Date(toDateStamp);
+                    var yearDiff =  toDate.getFullYear() - fromDate.getFullYear();
+                    var monthDiff = toDate.getMonth() - fromDate.getMonth();
+                    monthDiff += (yearDiff * 12);
+                    return monthDiff;
+                    break;
+            }
+        },
+        updateDateForOffset: function(milestoneData, offset){
+            var date = new Date(milestoneData.date);
+            var toDate;
+            switch(this.scale){
+                case 'day':
+                   toDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() + offset);
+                    break;
+                case 'month':
+                    toDate = new Date(date.getFullYear(), date.getMonth()+ offset, date.getDate());
+                    break;
+            }
+
+            milestoneData.date = toDate.getTime();
 
         },
         renderGrid: function (root) {
@@ -383,12 +423,12 @@
 
             var dragMove = function (d) {
                 d.x -= d3.event.dx;
-                _this.startDay = Math.floor(d.x / _this.dayWidth);
+                _this.scaleOffset = Math.floor(d.x / _this.dayWidth);
                 _this.updateTimeLine();
             }
 
             var dragStart = function (d) {
-                d.x = _this.startDay * _this.dayWidth;
+                d.x = _this.scaleOffset * _this.dayWidth;
             }
 
             gridRect.datum({x: 0, y: 0});
@@ -403,12 +443,22 @@
         },
         getMileStoneData: function (workSteamData) {
             var mileStones = [];
+            var _this = this;
             _.each(workSteamData.milestones, function (milestone) {
                 mileStones.push(milestone);
             })
 
             var mileStoneData = _.map(_.groupBy(mileStones, function (item) {
-                return item.date;
+                var date = new Date(item.date);
+                switch(_this.scale){
+                    case 'day':
+                        return item.date;
+                        break;
+                    case 'month':
+                        return new Date(date.getFullYear(),date.getMonth(),1).getTime()
+                        break;
+                }
+
             }), function (item, index) {
                 return {
                     date: index,
@@ -417,12 +467,11 @@
             });
             return mileStoneData;
         },
-        redrawWorkStream: function(root){
+        redrawWorkStream: function (root) {
             var _this = this;
             var workStreamData = _this.getWorkStreamData();
-            var startDate = new Date(this.startYear, this.startMonth, this.startDay).getTime();
+            var startDate = this.getTimeLineStartDay();
             var mileStonesPerColumn = _this.mileStonesPerColumn;
-
 
 
             var workStreams = root.selectAll('g.ws')
@@ -440,7 +489,8 @@
                 })
                 .attr('transform', function (d) {
                     var date = d.date;
-                    var dayDiff = (date - startDate) / msPerDay;
+                    var dayDiff = _this.getDateOffset(startDate, date);
+                    console.log(startDate, date, dayDiff);
                     var x = dayDiff * _this.dayWidth;
                     var y = 0;
                     return 'translate(' + x + ',' + y + ')';
@@ -449,11 +499,9 @@
 
             var mileStones = dates.selectAll('g.ms')
                 .data(function (d) {
-                    console.log(d);
                     return d.milestones
                 })
                 .attr('transform', function (d, index) {
-                    console.log(d.name,  new Date(d.date));
                     var x = Math.floor(index / mileStonesPerColumn) * 5;
                     var y = (index % mileStonesPerColumn) * _this.dayHeight;
                     d.xdif = x;
@@ -467,12 +515,12 @@
         renderWorkStream: function () {
             var _this = this;
             var workStreamData = _this.getWorkStreamData();
-            var startDate = new Date(this.startYear, this.startMonth, this.startDay).getTime();
+            var startDate = this.getTimeLineStartDay();
             var mileStonesPerColumn = _this.mileStonesPerColumn;
 
             var colorFun = d3.scale.category10()
             this.gridSVG.select('g.work-streams').remove();
-            var root = this.gridSVG.append('g').attr('class', 'work-streams');
+            var root = this.gridSVG.append('g').attr('class', 'work-streams').attr('transform', 'translate('+_this.dayWidth+', 0)');
             var workStreams = root.selectAll('g.ws')
                 .data(workStreamData)
                 .enter()
@@ -493,8 +541,8 @@
                 .append("g")
                 .attr('class', 'dt')
                 .attr('transform', function (d) {
-                    var date = d.date;
-                    var dayDiff = (date - startDate) / msPerDay;
+                    var date = +d.date;
+                    var dayDiff = _this.getDateOffset(startDate, date);
                     var x = dayDiff * _this.dayWidth;
                     var y = 0;
                     return 'translate(' + x + ',' + y + ')';
@@ -519,7 +567,6 @@
                 })
 
 
-
             mileStones.append('path').attr("d", d3.svg.symbol().type('diamond').size(600))
                 .attr("fill", function (d) {
                     return colorFun(d.type);
@@ -528,8 +575,8 @@
 
 
             mileStones.append('text')
-                .text(function(d){
-                    return d.name
+                .text(function (d) {
+                    return d.name + '_' + (new Date(d.date).getDate())
                 })
                 .attr('dy', 30)
                 .style("text-anchor", "middle")
@@ -537,37 +584,43 @@
             _this.workStreams = workStreams;
 
 
-            var dragMove = function(d){
-                d.x = Math.floor(d3.event.x/_this.dayWidth) * _this.dayWidth;
+            var dragMove = function (d) {
+                d.x = Math.floor(d3.event.x / _this.dayWidth) * _this.dayWidth;
                 var x = d.xdif + d.x;
                 var y = d.ydif;
-                d3.select(this).attr('transform', 'translate('+x+','+y+')' )
+                d3.select(this).attr('transform', 'translate(' + x + ',' + y + ')')
             }
 
-            var dragEnd = function(d){
-                var diffDays = (d.x/_this.dayWidth);
-                d.date += (diffDays * msPerDay);
+            var dragEnd = function (d) {
+                var diffDays = (d.x / _this.dayWidth);
+                _this.updateDateForOffset(d, diffDays);
+                //d.date = _this.dayData[diffDays].dateStamp;
                 _this.renderWorkStream();
             }
 
+            var dragStart = function(d){
+                console.log(d);
+            }
 
             var mileStoneDrag = d3.behavior.drag()
                 .origin(Object)
                 .on('drag', dragMove)
+                .on('dragstart', dragStart)
                 .on('dragend', dragEnd)
 
             mileStones.call(mileStoneDrag)
         },
         updateWorkStream: function () {
             var _this = this;
-            var startDate = new Date(this.startYear, this.startMonth, this.startDay).getTime();
-            if(!_this.workStreams){
+            var startDate = _this.getTimeLineStartDay();
+            if (!_this.workStreams) {
                 return;
             }
             _this.workStreams.selectAll('g.dt')
                 .attr('transform', function (d) {
-                    var date = d.date;
-                    var dayDiff = (date - startDate) / msPerDay;
+                    var date = +d.date;
+                    var dayDiff = _this.getDateOffset(startDate, date)
+                    console.log(startDate, date, dayDiff);
                     var x = dayDiff * _this.dayWidth;
                     var y = 0;
                     return 'translate(' + x + ',' + y + ')';
@@ -589,7 +642,7 @@
         for (var i = 0; i < 4; i++) {
             var wsName = 'ws_' + i;
             data.push({
-                name:wsName,
+                name: wsName,
                 id: i,
                 milestones: _.map(_.range(0, 6), function (index) {
                     return {
@@ -601,7 +654,6 @@
                 })
             })
         }
-        console.log(data);
         return data;
     }
 
@@ -617,7 +669,7 @@
     var lbpController = new LBPController({
         rootEl: d3.select('.lbp-container'),
         dayWidth: 50,
-        scale:'day'
+        scale: 'month'
     })
 
     lbpController.setWorkStreamData(generateWorkStreamData());
