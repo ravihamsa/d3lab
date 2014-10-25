@@ -3,8 +3,6 @@
 
     var monthArray = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 
-
-
     var msPerDay = 1000 * 60 * 60 * 24;
 
     var LBPController = function (config) {
@@ -669,7 +667,7 @@
     var lbpController = new LBPController({
         rootEl: d3.select('.lbp-container'),
         dayWidth: 50,
-        scale: 'month'
+        scale: 'day'
     })
 
     lbpController.setWorkStreamData(generateWorkStreamData());
