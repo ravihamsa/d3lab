@@ -72,7 +72,10 @@ html * {
 }
 .lbp-container .grid-container {
   position: relative;
-  overflow: hidden;
+  overflow: auto;
+}
+.lbp-container .mile-stones {
+  position: absolute;
 }
 .lbp-container .scroll-bar {
   border: 1px solid #ccc;
