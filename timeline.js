@@ -33,29 +33,42 @@ var TimeLineWidget = function (config) {
 var yearRollUpFun = function (leaves) {
     return {
         length: leaves.length,
-        label: year(leaves[0])
+        label: year(leaves[0]),
+        date:leaves[0],
+        endDate:d3.time.day.offset(leaves[leaves.length -1], 1)
     }
 }
 
 var monthRollUpFun = function (leaves) {
     return {
         length: leaves.length,
-        label: monthName(leaves[0])
+        label: monthName(leaves[0]),
+        date:leaves[0],
+        endDate:d3.time.day.offset(leaves[leaves.length -1], 1)
     }
 }
 
 var quarterRollUpFun = function (leaves) {
     return {
         length: leaves.length,
-        label: quarterNameIndex[monthName(leaves[0])]
+        label: quarterNameIndex[monthName(leaves[0])],
+        date:leaves[0],
+        endDate:d3.time.day.offset(leaves[leaves.length -1], 3)
     }
 }
 
 var dayRollUpFun = function (leaves) {
     return {
         length: leaves.length,
-        label: day(leaves[0])
+        label: day(leaves[0]),
+        date:leaves[0],
+        endDate:d3.time.day.offset(leaves[leaves.length -1], 1)
     }
+}
+
+
+var offsetDay = function(date, offset){
+    return d3.time.day.offset(date, offset);
 }
 
 
@@ -116,6 +129,7 @@ TimeLineWidget.prototype = {
 
     },
     renderTimeElements: function (className, keyFun, rollUpFun, yPos, color) {
+        var _this = this;
         var config = this.config;
         var rootEl = this.rootEl;
         var dayWidth = dayWidthArray[config.scale];
@@ -156,17 +170,17 @@ TimeLineWidget.prototype = {
             .attr('transform', function (d) {
                 d.offset = offset;
                 offset += d.values.length;
-                return getTranslateXY(d.offset * dayWidth, yPos)
+                return getTranslateXY(_this.xScale(d.values.date), yPos)
             })
             .select('rect')
             .attr('width', function (d) {
-                return d.values.length * dayWidth;
+                return (_this.xScale(d.values.endDate) - _this.xScale(d.values.date));
             })
 
         rootEl.selectAll(selector)
             .select('text')
             .attr('dx', function (d) {
-                return (d.values.length * dayWidth)/2;
+                return (_this.xScale(d.values.endDate) - _this.xScale(d.values.date))/2;
             })
 
     },
@@ -184,29 +198,33 @@ TimeLineWidget.prototype = {
         var offset = this.offset;
         var offsetAndVisibleUnits = offset + visibleTimeLineDays;
 
-        var data;
+        var data, from, to;
 
         switch (config.scale) {
             case 0:
-                this.xScale.domain([new Date(fromYear, fromMonth, fromDay), new Date(fromYear, fromMonth, fromDay+60)]);
-                data = this.xScale.ticks(d3.time.day);
+                from = offsetDay(new Date(fromYear, fromMonth, fromDay), offset);
+                to = offsetDay(new Date(fromYear, fromMonth, fromDay+50), offset);
+                this.xScale.domain([from, to]);
                 break;
             case 1:
-                this.xScale.domain([new Date(fromYear, fromMonth, fromDay), new Date(fromYear, fromMonth+20, fromDay)]);
-                data = this.xScale.ticks(d3.time.day);
+                from = offsetDay(new Date(fromYear, fromMonth, fromDay), offset);
+                to = offsetDay(new Date(fromYear, fromMonth+20, fromDay), offset);
+                this.xScale.domain([from, to]);
                 break;
             case 2:
-                this.xScale.domain([new Date(fromYear, fromMonth, fromDay), new Date(fromYear, fromMonth+60, fromDay)]);
-                data = this.xScale.ticks(d3.time.day);
+                from = offsetDay(new Date(fromYear, fromMonth, fromDay), offset);
+                to = offsetDay(new Date(fromYear, fromMonth+60, fromDay), offset);
+                this.xScale.domain([from, to]);
                 break;
             case 3:
-                this.xScale.domain([new Date(fromYear, fromMonth, fromDay), new Date(fromYear+20, fromMonth, fromDay)]);
-                data = this.xScale.ticks(d3.time.day);
+                from = offsetDay(new Date(fromYear, fromMonth, fromDay), offset);
+                to = offsetDay(new Date(fromYear+20, fromMonth, fromDay), offset);
+                this.xScale.domain([from, to]);
                 break;
         }
-        debugger;
 
-        this.data = data;
+
+        return this.xScale.ticks(d3.time.day);
 
     },
     getDateData1: function () {

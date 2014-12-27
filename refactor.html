@@ -45,7 +45,7 @@
     $element = [document.getElementById('timeLine')];
     var scaleArray = ['day', 'month', 'quarter', 'year']
     $scope = {
-        scale: 3
+        scale: 2
     }
 
 
@@ -60,11 +60,11 @@
 
 
     setTimeout(function () {
-        widget.setOffset(10);
-        widget.setConfigs({scale:2})
+        widget.setOffset(4000);
+        //widget.setConfigs({scale:2})
     }, 1000)
 
-    /*setTimeout(function () {
+   setTimeout(function () {
         //widget.setOffset(4000);
         widget.setConfigs({scale:1})
     }, 2000)
@@ -76,7 +76,7 @@
 
 
     setTimeout(function () {
-        widget.setOffset(10);
+        widget.setOffset(30);
         widget.setConfigs({scale:3})
     }, 4000)
 
@@ -93,7 +93,7 @@
     setTimeout(function () {
         //widget.setOffset(4000);
         //widget.setConfigs({scale:2})
-    }, 7000)*/
+    }, 7000)
 </script>
 
 </body>
