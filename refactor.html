@@ -8,14 +8,25 @@
             margin: 0;
             padding: 0;
             font-size: 13px;
+            font-family: 'Open Sans', 'Segoe UI', 'Droid Sans', Tahoma, Arial, sans-serif;
         }
 
         line {
             stroke: red;
+
         }
 
         rect {
             stroke: #ccc;
+            stroke-width: 0.5;
+        }
+
+        text {
+            font-size: 16px;
+        }
+
+        #timeLine {
+            width:100%;
         }
     </style>
     <script src="d3.js"></script>
@@ -24,325 +35,11 @@
 
 <div id="timeLine"></div>
 
+<script src="timeline.js"></script>
+
 <script>
 
-    var year = d3.time.format('%Y');
-    var day = d3.time.format('%e');
-    var month = d3.time.format('%m')
-    var monthName = d3.time.format('%b')
-    var duration = 400;
 
-
-    var dayUnitRatio = [1, 30, 90, 365]
-    var dayWidthArray = [30, 50/30, 60/90, 80/365]
-
-    var getTranslateXY = function (x, y) {
-        return 'translate(' + x + ',' + y + ')';
-    }
-
-
-    var TimeLineWidget = function (config) {
-        this.config = config;
-        this.rootWidth = parseInt(config.container.style('width'));
-        this.rootHeight = 300;
-        this.offset = 0;
-        this.initialize();
-    }
-
-
-    var yearRollUpFun = function (leaves) {
-        return {
-            length: leaves.length,
-            label: year(leaves[0])
-        }
-    }
-
-    var monthRollUpFun = function (leaves) {
-        return {
-            length: leaves.length,
-            label: monthName(leaves[0])
-        }
-    }
-
-    var dayRollUpFun = function (leaves) {
-        return {
-            length: leaves.length,
-            label: day(leaves[0])
-        }
-    }
-
-
-
-
-    TimeLineWidget.prototype = {
-        computeConfigs: function(){
-            var config = this.config;
-            this.dayWidth = dayWidthArray[config.scale];
-            this.unitWidth = this.dayWidth * dayUnitRatio[config.scale]
-            this.visibleTimeLineDays = Math.ceil(this.rootWidth / this.unitWidth);
-        },
-        initialize: function () {
-            this.computeConfigs();
-            this.populateData();
-        },
-        renderTimeLine: function () {
-            var scale = this.config.scale;
-            var yOffset = 0;
-
-            this.renderTimeElements('year', function (d) {
-                return year(d)
-            }, yearRollUpFun, yOffset, 'red')
-            yOffset+=20;
-
-            if(scale ===1 || scale === 0){
-                this.renderTimeElements('month', function (d) {
-                    return year(d) + '_' + month(d)
-                }, monthRollUpFun,  yOffset, 'blue')
-                yOffset+=20;
-            }else{
-                this.rootEl.selectAll('.month').remove();
-            }
-
-
-            if(scale === 2) {
-                this.renderTimeElements('quarter', function (d) {
-                    return year(d) + '_' + Math.ceil(month(d) / 3);
-                }, monthRollUpFun, yOffset, 'orange')
-                yOffset += 20;
-            }else{
-                this.rootEl.selectAll('.quarter').remove();
-            }
-
-            if(scale === 0){
-                this.renderTimeElements('day', function (d) {
-                    return year(d) + '_' + month(d) + '_' + day(d)
-                }, dayRollUpFun,  yOffset, 'green')
-                yOffset+=20;
-            }else{
-                this.rootEl.selectAll('.day').remove();
-            }
-
-        },
-        renderTimeElements: function (className, keyFun, rollUpFun, yPos, color) {
-            var config = this.config;
-            var rootEl = this.rootEl;
-            var dayWidth = dayWidthArray[config.scale];
-            var selector = '.' + className;
-            var timeLineData = d3.nest().key(keyFun).rollup(rollUpFun).entries(this.data);
-
-            var elements = rootEl.selectAll(selector)
-                    .data(timeLineData, function (d) {
-                        return d.id = d.key;
-                    });
-
-            elements.exit().remove();
-
-            var elementsEnter = elements.enter()
-                    .append('g')
-                    .attr('class', className)
-
-            elementsEnter.append('rect')
-                    .attr('fill', color)
-                    .attr('height', 20)
-
-            elementsEnter.append('text')
-                    .text(function (d) {
-                        return d.values.label;
-                    })
-                    .attr('dy', 15)
-                    .attr('dx', 5)
-                    .attr('fill', 'white')
-                    .attr('text-anchor', 'start')
-
-
-            var offset = 0;
-            rootEl.selectAll(selector)
-                    .attr('transform', function (d) {
-                        d.offset = offset;
-                        offset += d.values.length;
-                        return getTranslateXY(d.offset * dayWidth, yPos)
-                    })
-                    .select('rect')
-                    .attr('width', function (d) {
-                        console.log(d.values, dayWidth, d.values.length * dayWidth);
-                        return d.values.length * dayWidth;
-                    })
-
-        },
-        populateData: function () {
-            var config = this.config;
-            this.data = this.getDateData();
-        },
-        getDateData: function () {
-            var config = this.config;
-            var startDate = config.startDate;
-            var fromYear = +year(startDate);
-            var fromMonth = +month(startDate) - 1;
-            var fromDay = +day(startDate);
-            var visibleTimeLineDays = this.visibleTimeLineDays;
-            var offset = this.offset;
-            var offsetAndVisibleUnits = offset + visibleTimeLineDays;
-
-            var from, to, data;
-
-            switch (config.scale) {
-                case 0:
-                    from = new Date(fromYear, fromMonth, fromDay + offset)
-                    to = new Date(fromYear, fromMonth, fromDay + offsetAndVisibleUnits)
-                    data = d3.time.day.range(from, to);
-                    break;
-                case 1:
-                    from = new Date(fromYear, fromMonth + offset, fromDay)
-                    to = new Date(fromYear, fromMonth + offsetAndVisibleUnits, fromDay)
-                    data = d3.time.day.range(from, to);
-
-                case 2:
-                    offsetAndVisibleUnits *= 3;
-                    from = new Date(fromYear, fromMonth + (offset * 3), fromDay);
-                    to = new Date(fromYear, fromMonth + offsetAndVisibleUnits, fromDay)
-                    data = d3.time.day.range(from, to);
-                    break;
-                case 3:
-                    from = new Date(fromYear + offset, fromMonth, fromDay);
-                    to = new Date(fromYear + offsetAndVisibleUnits, fromMonth, fromDay)
-                    data = d3.time.day.range(from, to);
-                    break;
-            }
-            return data;
-        },
-
-        render: function () {
-            var config = this.config;
-            var w = this.rootWidth;
-            var h = this.rootHeight;
-            var svg = config.container.append('svg').attr('width', w).attr('height', h);
-            var xAxisEl = svg.append('g').attr('transform', 'translate(0,0)');
-            this.rootEl = xAxisEl;
-            this.renderTimeLine();
-
-            /*
-
-             var pos = 0;
-             var index = 0;
-             var yearEnter = xAxisEl.selectAll('.year')
-             .data(d3.nest().key(function (d) {
-             return year(d);
-             }).entries(days), function (d) {
-             d.x = pos;
-             d.count = d.values.length;
-             pos += d.count;
-             return d.id = d.id || 'year' + index++;
-             })
-             .enter()
-             .append('g')
-             .attr('class', 'year')
-             .attr('transform', function (d) {
-             var x = d.x * config.dayWidth;
-             var y = 0;
-             return 'translate(' + x + ',' + y + ')';
-             })
-
-             yearEnter.append('rect')
-             .attr('width', function (d) {
-             return d.count * config.dayWidth;
-             })
-             .attr('height', 20)
-
-             var monthPos = 0;
-             var monthsEnter = xAxisEl.selectAll('.year')
-             .selectAll('.month')
-             .data(function (d) {
-             monthPos=0;
-             return d3.nest().key(function (d) {
-             return monthName(d);
-             }).entries(d.values)
-             }, function (d) {
-             d.x = monthPos;
-             d.count = d.values.length;
-             monthPos += d.count;
-             console.log(monthPos, d.key, d.x);
-             return d.id = d.id || 'month' + index++;
-             })
-             .enter()
-             .append('g')
-             .attr('class', 'month')
-             .attr('transform', function (d) {
-             var x = d.x * config.dayWidth;
-             var y = 20;
-             return 'translate(' + x + ',' + y + ')';
-             })
-
-
-             monthsEnter.append('rect')
-             .attr('width', function (d) {
-             return d.count * config.dayWidth;
-             })
-             .attr('height', 20)
-             .attr('fill', 'red')
-
-             monthsEnter.append('text')
-             .text(function (d) {
-             return d.key;
-             })
-             .attr('dx', 3)
-             .attr('dy', 15)
-             .style("text-anchor", "start")
-
-
-             var dayPos = 0;
-             var daysEnter = xAxisEl.selectAll('.month')
-             .selectAll('.day')
-             .data(function (d) {
-             return d.values
-             }, function (d) {
-             d.x = dayPos;
-             d.count = 1;
-             dayPos += d.count;
-             return d.id = d.id || 'day' + index++;
-             })
-             .enter()
-             .append('g')
-             .attr('class', 'day')
-             .attr('id', function(d){return d.id})
-             .attr('transform', function (d, i) {
-             var x = i * config.dayWidth;
-             var y = 20;
-             return 'translate(' + x + ',' + y + ')';
-             })
-
-
-             daysEnter.append('rect')
-             .attr('width', function (d) {
-             return d.count * config.dayWidth;
-             })
-             .attr('height', 20)
-             .attr('fill', 'green')
-
-             daysEnter.append('text')
-             .text(function (d) {
-             return day(d);
-             })
-             .attr('dx', 3)
-             .attr('dy', 15)
-             .style("text-anchor", "start")
-
-             */
-
-        },
-        setOffset: function (offset) {
-            this.offset = offset;
-            this.populateData();
-            this.renderTimeLine();
-        },
-        setConfigs: function(map){
-            for(var i in map){
-                this.config[i] = map[i];
-            }
-            this.computeConfigs();
-            this.populateData();
-            this.renderTimeLine();
-        }
-    }
 
 
     $element = [document.getElementById('timeLine')];
@@ -355,7 +52,6 @@
     var widget = new TimeLineWidget({
         container: d3.select($element[0]),
         scale: $scope.scale,
-        rootHeight: 300,
         dayWidth: 25,
         startDate: new Date(2010, 10, 1)
     })
@@ -364,20 +60,40 @@
 
 
     setTimeout(function () {
-        //widget.setOffset(4000);
+        widget.setOffset(10);
         widget.setConfigs({scale:2})
-    }, 3000)
+    }, 1000)
 
-    setTimeout(function () {
+    /*setTimeout(function () {
         //widget.setOffset(4000);
         widget.setConfigs({scale:1})
-    }, 6000)
+    }, 2000)
 
     setTimeout(function () {
         //widget.setOffset(4000);
         widget.setConfigs({scale:0})
-    }, 9000)
+    }, 3000)
 
+
+    setTimeout(function () {
+        widget.setOffset(10);
+        widget.setConfigs({scale:3})
+    }, 4000)
+
+    setTimeout(function () {
+        //widget.setOffset(4000);
+        widget.setConfigs({scale:1})
+    }, 5000)
+
+    setTimeout(function () {
+        //widget.setOffset(4000);
+        //widget.setConfigs({scale:0})
+    }, 6000)
+
+    setTimeout(function () {
+        //widget.setOffset(4000);
+        //widget.setConfigs({scale:2})
+    }, 7000)*/
 </script>
 
 </body>
