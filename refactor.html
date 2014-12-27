@@ -8,14 +8,32 @@
             margin: 0;
             padding: 0;
             font-size: 13px;
+            box-sizing: border-box;
         }
 
-        line {
-            stroke: red;
+
+        .no-wrap {
+            white-space: nowrap;
         }
 
-        rect {
-            stroke: #ccc;
+        .time-line {
+            overflow: hidden;
+        }
+
+
+        .time-line .year , .time-line .month, .time-line .day, .time-line .quarter{
+            display: inline-block;
+            background-color: #333;
+            color:#fff;
+            border-right:1px solid #bbb;
+            border-bottom: 1px solid #bbb;
+            text-align: center;
+            padding:4px 0;
+            font-size: 16px;
+        }
+
+        .time-line .year {
+
         }
     </style>
     <script src="d3.js"></script>
@@ -64,6 +82,13 @@
         }
     }
 
+    var quarterRollUpFun = function (leaves) {
+        return {
+            length: leaves.length,
+            label: 'Q1'
+        }
+    }
+
     var dayRollUpFun = function (leaves) {
         return {
             length: leaves.length,
@@ -80,19 +105,25 @@
             this.dayWidth = dayWidthArray[config.scale];
             this.unitWidth = this.dayWidth * dayUnitRatio[config.scale]
             this.visibleTimeLineDays = Math.ceil(this.rootWidth / this.unitWidth);
+            config.container.attr('class','time-line')
         },
         initialize: function () {
             this.computeConfigs();
             this.populateData();
+            var config = this.config;
+            config.container.append('div').attr('class','year-line no-wrap')
+            config.container.append('div').attr('class','month-line no-wrap')
+            config.container.append('div').attr('class','quarter-line no-wrap')
+            config.container.append('div').attr('class','day-line no-wrap')
         },
         renderTimeLine: function () {
             var scale = this.config.scale;
-            var yOffset = 0;
-
             this.renderTimeElements('year', function (d) {
                 return year(d)
             }, yearRollUpFun, yOffset, 'red')
-            yOffset+=20;
+
+            var yOffset = 0;
+
 
             if(scale ===1 || scale === 0){
                 this.renderTimeElements('month', function (d) {
@@ -107,7 +138,7 @@
             if(scale === 2) {
                 this.renderTimeElements('quarter', function (d) {
                     return year(d) + '_' + Math.ceil(month(d) / 3);
-                }, monthRollUpFun, yOffset, 'orange')
+                }, quarterRollUpFun, yOffset, 'orange')
                 yOffset += 20;
             }else{
                 this.rootEl.selectAll('.quarter').remove();
@@ -123,11 +154,11 @@
             }
 
         },
-        renderTimeElements: function (className, keyFun, rollUpFun, yPos, color) {
+        renderTimeElements: function (className, keyFun, rollUpFun) {
             var config = this.config;
-            var rootEl = this.rootEl;
             var dayWidth = dayWidthArray[config.scale];
             var selector = '.' + className;
+            var rootEl = this.rootEl.select(selector+'-line');
             var timeLineData = d3.nest().key(keyFun).rollup(rollUpFun).entries(this.data);
 
             var elements = rootEl.selectAll(selector)
@@ -135,38 +166,26 @@
                         return d.id = d.key;
                     });
 
+
+
             elements.exit().remove();
 
             var elementsEnter = elements.enter()
-                    .append('g')
+                    .append('div')
                     .attr('class', className)
-
-            elementsEnter.append('rect')
-                    .attr('fill', color)
-                    .attr('height', 20)
-
-            elementsEnter.append('text')
+                    .style('width', function (d) {
+                        return (d.values.length * dayWidth)+'px';
+                    })
                     .text(function (d) {
                         return d.values.label;
                     })
-                    .attr('dy', 15)
-                    .attr('dx', 5)
-                    .attr('fill', 'white')
-                    .attr('text-anchor', 'start')
 
 
-            var offset = 0;
-            rootEl.selectAll(selector)
-                    .attr('transform', function (d) {
-                        d.offset = offset;
-                        offset += d.values.length;
-                        return getTranslateXY(d.offset * dayWidth, yPos)
+
+            elements.style('width', function (d) {
+                        return (d.values.length * dayWidth)+'px';
                     })
-                    .select('rect')
-                    .attr('width', function (d) {
-                        console.log(d.values, dayWidth, d.values.length * dayWidth);
-                        return d.values.length * dayWidth;
-                    })
+
 
         },
         populateData: function () {
@@ -215,118 +234,11 @@
             var config = this.config;
             var w = this.rootWidth;
             var h = this.rootHeight;
-            var svg = config.container.append('svg').attr('width', w).attr('height', h);
-            var xAxisEl = svg.append('g').attr('transform', 'translate(0,0)');
-            this.rootEl = xAxisEl;
+            var svg = config.container//.append('svg').attr('width', w).attr('height', h);
+
+            this.rootEl = config.container;
             this.renderTimeLine();
 
-            /*
-
-             var pos = 0;
-             var index = 0;
-             var yearEnter = xAxisEl.selectAll('.year')
-             .data(d3.nest().key(function (d) {
-             return year(d);
-             }).entries(days), function (d) {
-             d.x = pos;
-             d.count = d.values.length;
-             pos += d.count;
-             return d.id = d.id || 'year' + index++;
-             })
-             .enter()
-             .append('g')
-             .attr('class', 'year')
-             .attr('transform', function (d) {
-             var x = d.x * config.dayWidth;
-             var y = 0;
-             return 'translate(' + x + ',' + y + ')';
-             })
-
-             yearEnter.append('rect')
-             .attr('width', function (d) {
-             return d.count * config.dayWidth;
-             })
-             .attr('height', 20)
-
-             var monthPos = 0;
-             var monthsEnter = xAxisEl.selectAll('.year')
-             .selectAll('.month')
-             .data(function (d) {
-             monthPos=0;
-             return d3.nest().key(function (d) {
-             return monthName(d);
-             }).entries(d.values)
-             }, function (d) {
-             d.x = monthPos;
-             d.count = d.values.length;
-             monthPos += d.count;
-             console.log(monthPos, d.key, d.x);
-             return d.id = d.id || 'month' + index++;
-             })
-             .enter()
-             .append('g')
-             .attr('class', 'month')
-             .attr('transform', function (d) {
-             var x = d.x * config.dayWidth;
-             var y = 20;
-             return 'translate(' + x + ',' + y + ')';
-             })
-
-
-             monthsEnter.append('rect')
-             .attr('width', function (d) {
-             return d.count * config.dayWidth;
-             })
-             .attr('height', 20)
-             .attr('fill', 'red')
-
-             monthsEnter.append('text')
-             .text(function (d) {
-             return d.key;
-             })
-             .attr('dx', 3)
-             .attr('dy', 15)
-             .style("text-anchor", "start")
-
-
-             var dayPos = 0;
-             var daysEnter = xAxisEl.selectAll('.month')
-             .selectAll('.day')
-             .data(function (d) {
-             return d.values
-             }, function (d) {
-             d.x = dayPos;
-             d.count = 1;
-             dayPos += d.count;
-             return d.id = d.id || 'day' + index++;
-             })
-             .enter()
-             .append('g')
-             .attr('class', 'day')
-             .attr('id', function(d){return d.id})
-             .attr('transform', function (d, i) {
-             var x = i * config.dayWidth;
-             var y = 20;
-             return 'translate(' + x + ',' + y + ')';
-             })
-
-
-             daysEnter.append('rect')
-             .attr('width', function (d) {
-             return d.count * config.dayWidth;
-             })
-             .attr('height', 20)
-             .attr('fill', 'green')
-
-             daysEnter.append('text')
-             .text(function (d) {
-             return day(d);
-             })
-             .attr('dx', 3)
-             .attr('dy', 15)
-             .style("text-anchor", "start")
-
-             */
 
         },
         setOffset: function (offset) {
@@ -364,7 +276,7 @@
 
 
     setTimeout(function () {
-        //widget.setOffset(4000);
+        widget.setOffset(4);
         widget.setConfigs({scale:2})
     }, 3000)
 
@@ -375,7 +287,7 @@
 
     setTimeout(function () {
         //widget.setOffset(4000);
-        widget.setConfigs({scale:0})
+        //widget.setConfigs({scale:0})
     }, 9000)
 
 </script>
