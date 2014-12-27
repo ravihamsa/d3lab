@@ -68,6 +68,8 @@ TimeLineWidget.prototype = {
         this.unitWidth = this.dayWidth * dayUnitRatio[config.scale]
         this.visibleTimeLineDays = Math.ceil(this.rootWidth / this.unitWidth);
         this.rootHeight =rootHeightArray[config.scale];
+        this.xScale = d3.time.scale()
+        this.xScale.range([0,this.rootWidth]);
     },
     initialize: function () {
         this.computeConfigs();
@@ -172,7 +174,42 @@ TimeLineWidget.prototype = {
         var config = this.config;
         this.data = this.getDateData();
     },
-    getDateData: function () {
+    getDateData: function(){
+        var config = this.config;
+        var startDate = config.startDate;
+        var fromYear = +year(startDate);
+        var fromMonth = +month(startDate) - 1;
+        var fromDay = +day(startDate);
+        var visibleTimeLineDays = this.visibleTimeLineDays;
+        var offset = this.offset;
+        var offsetAndVisibleUnits = offset + visibleTimeLineDays;
+
+        var data;
+
+        switch (config.scale) {
+            case 0:
+                this.xScale.domain([new Date(fromYear, fromMonth, fromDay), new Date(fromYear, fromMonth, fromDay+60)]);
+                data = this.xScale.ticks(d3.time.day);
+                break;
+            case 1:
+                this.xScale.domain([new Date(fromYear, fromMonth, fromDay), new Date(fromYear, fromMonth+20, fromDay)]);
+                data = this.xScale.ticks(d3.time.day);
+                break;
+            case 2:
+                this.xScale.domain([new Date(fromYear, fromMonth, fromDay), new Date(fromYear, fromMonth+60, fromDay)]);
+                data = this.xScale.ticks(d3.time.day);
+                break;
+            case 3:
+                this.xScale.domain([new Date(fromYear, fromMonth, fromDay), new Date(fromYear+20, fromMonth, fromDay)]);
+                data = this.xScale.ticks(d3.time.day);
+                break;
+        }
+        debugger;
+
+        this.data = data;
+
+    },
+    getDateData1: function () {
         var config = this.config;
         var startDate = config.startDate;
         var fromYear = +year(startDate);
@@ -186,9 +223,6 @@ TimeLineWidget.prototype = {
 
         switch (config.scale) {
             case 0:
-            case 1:
-            case 2:
-            case 3:
                 from = new Date(fromYear, fromMonth, fromDay + offset)
                 to = new Date(fromYear, fromMonth, fromDay + offsetAndVisibleUnits)
                 data = d3.time.day.range(from, to);
