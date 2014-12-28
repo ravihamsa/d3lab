@@ -33,7 +33,7 @@
         }
     }
 
-    var configs = {scale:0, level:0, view:'gantt', startDate: new Date(2010, 11, 1), offset:0, gridHeight:0};
+    var configs = {scale:0, level:4, view:'gantt', startDate: new Date(2010, 11, 1), offset:0, gridHeight:0};
 
     var engine = {
         add: function (moduleName, moduleInstance) {

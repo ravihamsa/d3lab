@@ -8,6 +8,7 @@
             margin: 0;
             padding: 0;
             font-size: 13px;
+            list-style: none;
             font-family: 'Open Sans', 'Segoe UI', 'Droid Sans', Tahoma, Arial, sans-serif;
         }
 
@@ -38,10 +39,41 @@
             width:100%;
             z-index: 4;
         }
+
+        .scale-list {
+            padding: 10px;
+        }
+        .scale-list li{
+            display: inline-block;
+            margin-right: 5px;
+
+        }
+        .scale-list li a {
+            display: block;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-decoration: none;
+            color:#333;
+        }
     </style>
     <script src="d3.js"></script>
 </head>
 <body>
+
+<ul class="scale-list">
+    <li><a href="javascript:setScale(0)">day</a> </li>
+    <li><a href="javascript:setScale(1)">month</a> </li>
+    <li><a href="javascript:setScale(2)">quarter</a> </li>
+    <li><a href="javascript:setScale(3)">year</a> </li>
+</ul>
+
+<ul class="scale-list">
+    <li><a href="javascript:setLevel(0)">1</a> </li>
+    <li><a href="javascript:setLevel(1)">2</a> </li>
+    <li><a href="javascript:setLevel(2)">3</a> </li>
+    <li><a href="javascript:setLevel(3)">4</a> </li>
+</ul>
 
 <div id="visualization" style="height: 600px;;"></div>
 
@@ -52,6 +84,13 @@
 
 <script>
 
+    var setScale = function(scale){
+        visEngine.setConfigs({scale:scale})
+    }
+
+    var setLevel = function(level){
+        visEngine.setConfigs({level:level})
+    }
 
 
     $element = [document.getElementById('visualization')];
@@ -61,7 +100,6 @@
     visEngine.setConfigs ({ container:d3.select('#visualization')})
 
     visEngine.setConfig('workStreamData', data);
-
 
     visEngine.start();
 
@@ -81,17 +119,17 @@
     },1000);
 
 
-    setTimeout(function () {
-        visEngine.setConfigs({scale:1})
-    }, 2000)
-
-    setTimeout(function () {
-        visEngine.setConfigs({scale:2})
-    }, 3000)
-
-    setTimeout(function () {
-        visEngine.setConfigs({scale:3})
-    }, 4000)
+//    setTimeout(function () {
+//        visEngine.setConfigs({scale:1})
+//    }, 2000)
+//
+//    setTimeout(function () {
+//        visEngine.setConfigs({scale:2})
+//    }, 3000)
+//
+//    setTimeout(function () {
+//        visEngine.setConfigs({scale:3})
+//    }, 4000)
 
 /*
     for(var i=0; i<200; i++){
