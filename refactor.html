@@ -27,20 +27,23 @@
         }
 
         #timeLine {
-
+            position: fixed;
+            z-index: 5;
+            width:100%;
         }
 
         .lbp-element {
             position: absolute;
             top:90px;
+            width:100%;
+            z-index: 4;
         }
     </style>
     <script src="d3.js"></script>
 </head>
 <body>
 
-<div id="timeLine"></div>
-<div class="lbp-element"></div>
+<div id="visualization" style="height: 600px;;"></div>
 
 <script src="data.js"></script>
 <script src="timeline.js"></script>
@@ -51,24 +54,15 @@
 
 
 
-    $element = [document.getElementById('timeLine')];
+    $element = [document.getElementById('visualization')];
 
 
 
+    visEngine.setConfigs ({offset:400, container:d3.select('#visualization')})
+
+    visEngine.setConfig('workStreamData', data);
 
 
-
-    var timeLineWidget = new TimeLineWidget({
-        container: d3.select($element[0])
-    })
-
-    visEngine.add('timeLine', timeLineWidget);
-
-    var lbpWidget = new LBPTree({
-        container:d3.select('.lbp-element')
-    })
-
-    visEngine.add('lbp', lbpWidget);
     visEngine.start();
 
 
@@ -78,7 +72,7 @@
     for(var i=0; i<20; i++){
         (function(tmpi){
             setTimeout(function(){
-                visEngine.setConfigs({offset:tmpi*1});
+                visEngine.setConfigs({offset:tmpi*-1});
                 //lbpWidget.renderTree();
             }, tmpi*100)
         })(i)
@@ -86,7 +80,7 @@
     }
 
     setTimeout(function () {
-        visEngine.setConfigs({scale:1})
+        //visEngine.setConfigs({scale:1})
     }, 1000)
 
 /*

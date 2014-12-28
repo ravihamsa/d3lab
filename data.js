@@ -1,4 +1,4 @@
-var workStreamData = [{
+var data = [{
     "planId": "pc1",
     "title": "ws1",
     "metadata": {

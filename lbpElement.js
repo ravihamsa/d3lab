@@ -11,33 +11,32 @@
     LBPTree.prototype = {
         initialize:function(){
             //var config = this.engine.getConfigs();
-            //this.computeConfigs();
+            this.computeConfigs();
+            //this.rootWidth = parseInt(this.container.style('width'));
             this.nodeIndex = 100;
         },
 
         computeConfigs: function () {
             var config = this.engine.getConfigs();
-            var timeLine = config.timeLine;
-            this.timeLineHeight = timeLine.timeLineHeight;
-            this.xScale = timeLine.xScale;
-            this.offset = timeLine.offset;
-            this.rootNode = {children: workStreamData.map(function(item){
+            this.rootNode = {children: config.workStreamData.map(function(item){
                 return item.metadata.root;
             }), x0: 20, y0: 30, name:'root', groupType:'root'};
         },
 
         render: function(){
-            var config = this.config;
-            var svg = config.container.append('svg');
-            this.rootSVG = svg;
+            var config = this.engine.getConfigs();
+            var svg = this.container;
+            svg.attr('width', config.rootWidth)
+            this.container = svg;
             this.renderTree();
         },
         renderTree: function(){
             var _this = this;
-            var rootEl = this.rootSVG;
-            var timeLine = this.timeLine;
-            var startDate = timeLine.config.startDate;
-            var xScale = timeLine.xScale;
+            var engine = _this.engine;
+            var rootEl = this.container;
+
+            var startDate = engine.getConfig('startDate');
+            var xScale = engine.getProperty('timeLine', 'xScale')
 
             var tree = d3.layout.tree()
                 .nodeSize([0, 0])
@@ -64,6 +63,19 @@
 
             visit(this.rootNode);
 
+
+            var click = function (d) {
+                if (d3.event.defaultPrevented) return;
+                if (d.children) {
+                    d._children = d.children;
+                    d.children = null;
+                } else {
+                    d.children = d._children;
+                    d._children = null;
+                }
+                _this.renderTree(d);
+            }
+
             var nodes = tree(this.rootNode);
             var heightOffset = -barHeight;
 
@@ -84,8 +96,9 @@
             });
 
             rootEl.attr('width', this.rootWidth).attr('height', heightOffset);
+            engine.setConfig('gridHeight', heightOffset)
 
-            var nodeElements =  this.rootSVG.selectAll('.node')
+            var nodeElements =  this.container.selectAll('.node')
                 .data(nodes, function(d){
                     return d.id = d.id || _this.nodeIndex++;
                 })
@@ -109,6 +122,7 @@
                         return 'orange';
                     }
                 })
+                .on("click", click)
 
             nodesEnter.append('text')
                 .text(function(d){return d.name})
@@ -129,6 +143,18 @@
                 .attr('width', function(d){
                     return d.width;
                 })
+
+            nodes.forEach(function (d) {
+                d.x0 = d.x;
+                d.y0 = d.y;
+            });
+
+        },
+        onOffsetChange: function(){
+            this.renderTree();
+        },
+        onScaleChange: function(){
+            this.renderTree();
         }
     }
 

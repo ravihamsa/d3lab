@@ -6,6 +6,8 @@
     var scaleArray = ['day', 'month', 'quarter', 'year']
 
 
+    
+
     var callModuleHandlers = function (eventName, eventObj) {
         var handlerName = 'on' + eventName.replace(/[a-z]/, function (g) {
                 return g.toUpperCase()
@@ -17,6 +19,18 @@
                     module[handlerName].call(module, eventObj);
                 }
             }
+        }
+    }
+
+    var getModuleProperty = function (moduleName, propertyName){
+        var handlerName = 'get' + propertyName.replace(/[a-z]/, function (g) {
+                return g.toUpperCase()
+            })
+        var module = moduleIndex[moduleName];
+        if(module[handlerName]){
+            return module[handlerName].call(module);
+        }else{
+            return 'property getter undefined';
         }
     }
 
@@ -38,16 +52,51 @@
             } while (/\./.test(curEventName))
             callModuleHandlers(curEventName, eventObj);
         },
+        getProperty: function(moduleName, propertyName){
+            return getModuleProperty(moduleName, propertyName.replace(/\.([a-z])/g, function (g) {
+                return g.toUpperCase()
+            }).replace(/\./g, ''))
+        },
         setConfigs:function(configObject){
             for(var i in configObject){
-                configs[i]=configObject[i];
+                if(configs[i] !== configObject[i]){
+                    configs[i]=configObject[i];
+                    this.triggerMethod(i+'.change', {key:i, value:configObject[i]});
+                }
+
             }
             this.triggerMethod('configs.change', configs);
             //configs = configObject;
         },
         moduleIndex:moduleIndex,
         start: function(){
-            moduleIndex['timeLine'].render();
+
+
+            var container = this.getConfig('container')//.append('svg');
+            var rootWidth = parseInt(container.style('width'));
+            var rootHeight = parseInt(container.style('height'));
+            this.setConfig('rootWidth', rootWidth);
+            this.setConfig('rootHeight', rootHeight);
+            var svgContainer = container.append('svg').attr('width', this.getConfig('rootWidth')).attr('height', this.getConfig('rootHeight'));
+            var timeLineContainer = svgContainer.append('svg').attr('class','time-line');
+            var lbpContainer = svgContainer.append('svg').attr('class','lbp-element');
+
+
+            timeLineContainer.attr('width', rootWidth-40).attr('height', configs.rootHeight).attr('x', 40);
+
+            var timeLineWidget = new TimeLineWidget({
+                container:timeLineContainer
+            })
+
+            this.add('timeLine', timeLineWidget);
+
+            var lbpWidget = new LBPTree({
+                container: lbpContainer
+            })
+
+            this.add('lbp', lbpWidget);
+
+            //timeLineWidget.render();
             //moduleIndex['lbp'].render();
         },
         getConfig: function(n){
@@ -55,11 +104,14 @@
         },
         setConfig: function(n, value){
             configs[n]=value;
-            this.triggerMethod(n+'.change', n, value);
+            this.triggerMethod(n+'.change', {key:n, value:value});
             this.triggerMethod('configs.change', configs);
         },
         getConfigs: function(){
             return configs;
+        },
+        getModule: function(name){
+            return moduleIndex[name];
         }
     };
 

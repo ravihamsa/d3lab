@@ -66,22 +66,22 @@
     TimeLineWidget.prototype = {
         initialize: function () {
             var config = this.engine.getConfigs();
-            this.rootWidth = parseInt(this.container.style('width'));
-            this.rootHeight = config.rootHeight || 300;
             this.computeConfigs();
             this.populateData();
-            console.log(this.data);
         },
         computeConfigs: function () {
             var config = this.engine.getConfigs();
             this.xScale = d3.time.scale()
-            this.xScale.range([0, this.rootWidth]);
+            this.xScale.range([0, config.rootWidth]);
         },
         renderTimeLine: function () {
-            var scale = this.engine.getConfig('scale');
+            var configs = this.engine.getConfigs();
+            var scale = configs.scale;
             var yOffset = 0;
 
-            this.rootSVG.attr('width', this.rootWidth).attr('height', this.rootHeight);
+            var rootSVG = this.container;
+
+
 
             this.renderTimeElements('year', function (d) {
                 return year(d)
@@ -94,7 +94,7 @@
                 }, monthRollUpFun, yOffset, 'blue')
                 yOffset += boxHeight;
             } else {
-                this.rootSVG.selectAll('.month').remove();
+                rootSVG.selectAll('.month').remove();
             }
 
             if (scale === 2) {
@@ -103,7 +103,7 @@
                 }, quarterRollUpFun, yOffset, 'orange')
                 yOffset += boxHeight;
             } else {
-                this.rootSVG.selectAll('.quarter').remove();
+                rootSVG.selectAll('.quarter').remove();
             }
 
             if (scale === 0) {
@@ -112,13 +112,13 @@
                 }, dayRollUpFun, yOffset, 'green')
                 yOffset += boxHeight;
             } else {
-                this.rootSVG.selectAll('.day').remove();
+                rootSVG.selectAll('.day').remove();
             }
 
         },
         renderTimeElements: function (className, keyFun, rollUpFun, yPos, color) {
             var _this = this;
-            var rootSVG = this.rootSVG;
+            var rootSVG = this.container;
             var selector = '.' + className;
 
 
@@ -212,17 +212,25 @@
 
         render: function () {
             var config = this.engine.getConfigs();
-            var w = this.rootWidth;
-            var h = this.rootHeight;
-            var svg = this.container.append('svg');
-            this.rootSVG = svg;
-            this.rootEl = this.rootSVG;
             this.renderTimeLine();
 
         },
-        onConfigsChange: function(){
+        onOffsetChange: function(){
             this.populateData();
             this.renderTimeLine();
+        },
+        onScaleChange: function(){
+            this.populateData();
+            this.renderTimeLine();
+        },
+        onGridHeightChange: function(change){
+            this.container.attr('height', change.value);
+            this.container.selectAll('line')
+                .attr('y1', 0)
+                .attr('y2', change.value)
+        },
+        getXScale: function(){
+            return this.xScale;
         }
     }
 
