@@ -3,6 +3,9 @@
 
     var barHeight = 50;
 
+    var duration = 400;
+    var color = d3.scale.category10();
+
     var LBPTree = function(config){
         this.container = config.container;
     }
@@ -20,7 +23,7 @@
             var config = this.engine.getConfigs();
             this.rootNode = {children: config.workStreamData.map(function(item){
                 return item.metadata.root;
-            }), x0: 20, y0: 30, name:'root', groupType:'root'};
+            }), x0: 0, y0: 0, name:'root', groupType:'root'};
         },
 
         render: function(){
@@ -28,12 +31,15 @@
             var svg = this.container;
             svg.attr('width', config.rootWidth)
             this.container = svg;
-            this.renderTree();
+            this.renderTree(this.rootNode);
         },
-        renderTree: function(){
+        renderTree: function(source){
             var _this = this;
             var engine = _this.engine;
             var rootEl = this.container;
+            if(!source){
+                source = this.rootNode;
+            }
 
             var startDate = engine.getConfig('startDate');
             var xScale = engine.getProperty('timeLine', 'xScale')
@@ -95,8 +101,8 @@
 
             });
 
-            rootEl.attr('width', this.rootWidth).attr('height', heightOffset);
-            engine.setConfig('gridHeight', heightOffset)
+            //rootEl.attr('height', heightOffset);
+            engine.setConfig('gridHeight', Math.max(engine.getConfig('gridHeight'), heightOffset));
 
             var nodeElements =  this.container.selectAll('.node')
                 .data(nodes, function(d){
@@ -104,22 +110,27 @@
                 })
 
 
-            nodeElements.exit().remove();
+
+
 
             var nodesEnter = nodeElements.enter()
                 .append('g')
                 .attr('class', function(d){
                     return 'node '+ d.groupType;
+                })
+                .style('opacity',0)
+                .attr("transform", function (d) {
+                    return 'translate('+source.x0+','+source.y0+')'
                 });
 
             nodesEnter.append('rect')
-                .attr('height', 20)
+                .attr('height', 30)
                 .attr('y', 20)
                 .attr('fill', function(d){
                     if(d.groupType === 'task'){
                         return '#000'
                     }else{
-                        return 'orange';
+                        return color(d.groupType);
                     }
                 })
                 .on("click", click)
@@ -133,16 +144,29 @@
 
             rootEl.selectAll('.node')
                 .transition()
-                .duration(40)
+                .duration(duration)
                 .attr('transform', function(d){
                     return 'translate('+ d.x+','+ d.y+')';
                 })
+                .style('opacity',1)
 
             rootEl.selectAll('.node')
                 .select('rect')
                 .attr('width', function(d){
                     return d.width;
                 })
+
+
+            nodeElements.exit()
+                .transition()
+                .duration(duration)
+                .attr("transform", function (d) {
+                    return 'translate('+source.x0+','+source.y0+')'
+                })
+                .style('opacity',0)
+                .remove();
+
+
 
             nodes.forEach(function (d) {
                 d.x0 = d.x;

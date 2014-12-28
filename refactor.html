@@ -58,7 +58,7 @@
 
 
 
-    visEngine.setConfigs ({offset:400, container:d3.select('#visualization')})
+    visEngine.setConfigs ({ container:d3.select('#visualization')})
 
     visEngine.setConfig('workStreamData', data);
 
@@ -68,20 +68,22 @@
 
 
 
+    setTimeout(function () {
+        for (var i = 0; i < 20; i++) {
+            (function (tmpi) {
+                setTimeout(function () {
+                    visEngine.setConfigs({offset: tmpi * -1});
+                    //lbpWidget.renderTree();
+                }, tmpi * 100)
+            })(i)
 
-    for(var i=0; i<20; i++){
-        (function(tmpi){
-            setTimeout(function(){
-                visEngine.setConfigs({offset:tmpi*-1});
-                //lbpWidget.renderTree();
-            }, tmpi*100)
-        })(i)
+        }
+    },1000);
 
-    }
 
     setTimeout(function () {
         //visEngine.setConfigs({scale:1})
-    }, 1000)
+    }, 2000)
 
 /*
     for(var i=0; i<200; i++){

@@ -6,7 +6,6 @@
     var scaleArray = ['day', 'month', 'quarter', 'year']
 
 
-    
 
     var callModuleHandlers = function (eventName, eventObj) {
         var handlerName = 'on' + eventName.replace(/[a-z]/, function (g) {
@@ -34,7 +33,7 @@
         }
     }
 
-    var configs = {scale:0, level:0, view:'gantt', startDate: new Date(2010, 11, 1), offset:0};
+    var configs = {scale:0, level:0, view:'gantt', startDate: new Date(2010, 11, 1), offset:0, gridHeight:0};
 
     var engine = {
         add: function (moduleName, moduleInstance) {
@@ -71,7 +70,6 @@
         moduleIndex:moduleIndex,
         start: function(){
 
-
             var container = this.getConfig('container')//.append('svg');
             var rootWidth = parseInt(container.style('width'));
             var rootHeight = parseInt(container.style('height'));
@@ -83,6 +81,7 @@
 
 
             timeLineContainer.attr('width', rootWidth-40).attr('height', configs.rootHeight).attr('x', 40);
+            lbpContainer.attr('width', rootWidth-140).attr('x', 40).attr('y',90);
 
             var timeLineWidget = new TimeLineWidget({
                 container:timeLineContainer
@@ -96,15 +95,16 @@
 
             this.add('lbp', lbpWidget);
 
-            //timeLineWidget.render();
-            //moduleIndex['lbp'].render();
+            timeLineWidget.render();
+            lbpWidget.render();
         },
         getConfig: function(n){
             return configs[n];
         },
         setConfig: function(n, value){
+            var oldValue = configs[n];
             configs[n]=value;
-            this.triggerMethod(n+'.change', {key:n, value:value});
+            this.triggerMethod(n+'.change', {key:n, value:value, oldValue:oldValue});
             this.triggerMethod('configs.change', configs);
         },
         getConfigs: function(){

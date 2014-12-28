@@ -224,10 +224,12 @@
             this.renderTimeLine();
         },
         onGridHeightChange: function(change){
-            this.container.attr('height', change.value);
+            var value = change.value;
+            this.container.attr('height', value+90);
+            d3.select(this.container.node().parentNode).attr('height', value+90);
             this.container.selectAll('line')
                 .attr('y1', 0)
-                .attr('y2', change.value)
+                .attr('y2', value)
         },
         getXScale: function(){
             return this.xScale;
