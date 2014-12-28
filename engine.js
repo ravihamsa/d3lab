@@ -58,11 +58,10 @@
         },
         setConfigs:function(configObject){
             for(var i in configObject){
-                if(configs[i] !== configObject[i]){
+                //if(configs[i] !== configObject[i]){
                     configs[i]=configObject[i];
                     this.triggerMethod(i+'.change', {key:i, value:configObject[i]});
-                }
-
+                //}
             }
             this.triggerMethod('configs.change', configs);
             //configs = configObject;
