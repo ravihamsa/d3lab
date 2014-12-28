@@ -80,7 +80,7 @@
             var lbpContainer = svgContainer.append('svg').attr('class','lbp-element');
 
 
-            timeLineContainer.attr('width', rootWidth-40).attr('height', configs.rootHeight).attr('x', 40);
+            timeLineContainer.attr('width', rootWidth-140).attr('height', configs.rootHeight).attr('x', 40);
             lbpContainer.attr('width', rootWidth-140).attr('x', 40).attr('y',90);
 
             var timeLineWidget = new TimeLineWidget({

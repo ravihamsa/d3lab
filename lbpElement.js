@@ -17,6 +17,7 @@
             this.computeConfigs();
             //this.rootWidth = parseInt(this.container.style('width'));
             this.nodeIndex = 100;
+            this.levelForced = true;
         },
 
         computeConfigs: function () {
@@ -37,6 +38,7 @@
             var _this = this;
             var engine = _this.engine;
             var rootEl = this.container;
+            var forcedLevel = engine.getConfig('level');
             if(!source){
                 source = this.rootNode;
             }
@@ -51,12 +53,25 @@
                 })
 
 
-            var visit = function(node){
-                var children =  node.children;
+            var visit = function(node, level){
+                if(_this.levelForced){
+                    if(level > forcedLevel){
+                        if(node.children){
+                            node._children = node.children;
+                            node.children = null;
+                        }
+                    }else{
+                        if(node._children){
+                            node.children = node._children;
+                            node._children = null;
+                        }
+                    }
+                }
+                var children =  node.children || node._children;
                 if(children){
                     var len = children.length;
                     for(var i=0; i<len; i++){
-                        visit(children[i]);
+                        visit(children[i], level+1);
                     }
                     node.offset = d3.min(children, function(d){
                         return d.offset || 0;
@@ -67,10 +82,12 @@
                 }
             }
 
-            visit(this.rootNode);
+            visit(this.rootNode, -1);
 
 
             var click = function (d) {
+                _this.levelForced = false;
+
                 if (d3.event.defaultPrevented) return;
                 if (d.children) {
                     d._children = d.children;
@@ -120,7 +137,7 @@
                 })
                 .style('opacity',0)
                 .attr("transform", function (d) {
-                    return 'translate('+source.x0+','+source.y0+')'
+                    return 'translate('+ d.x +','+source.y0+')'
                 });
 
             nodesEnter.append('rect')
@@ -161,7 +178,7 @@
                 .transition()
                 .duration(duration)
                 .attr("transform", function (d) {
-                    return 'translate('+source.x0+','+source.y0+')'
+                    return 'translate('+ d.x +','+source.y0+')'
                 })
                 .style('opacity',0)
                 .remove();
@@ -178,6 +195,10 @@
             this.renderTree();
         },
         onScaleChange: function(){
+            this.renderTree();
+        },
+        onLevelChange: function(change){
+            this.levelForced = true;
             this.renderTree();
         }
     }
