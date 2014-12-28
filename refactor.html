@@ -12,7 +12,8 @@
         }
 
         line {
-            stroke: red;
+            stroke: #ccc;
+            stroke-width: 0.5;
 
         }
 
@@ -26,7 +27,12 @@
         }
 
         #timeLine {
-            width:100%;
+
+        }
+
+        .lbp-element {
+            position: absolute;
+            top:90px;
         }
     </style>
     <script src="d3.js"></script>
@@ -34,8 +40,11 @@
 <body>
 
 <div id="timeLine"></div>
+<div class="lbp-element"></div>
 
+<script src="data.js"></script>
 <script src="timeline.js"></script>
+<script src="lbpElement.js"></script>
 
 <script>
 
@@ -45,24 +54,64 @@
     $element = [document.getElementById('timeLine')];
     var scaleArray = ['day', 'month', 'quarter', 'year']
     $scope = {
-        scale: 2
+        scale: 0
     }
 
 
-    var widget = new TimeLineWidget({
+    var timeLineWidget = new TimeLineWidget({
         container: d3.select($element[0]),
         scale: $scope.scale,
         dayWidth: 25,
-        startDate: new Date(2010, 10, 1)
+        rootHeight:400,
+        startDate: new Date(2010, 11, 1)
     })
 
-    widget.render();
+    timeLineWidget.render();
 
+
+    var lbpWidget = new LBPTree({
+        timeLine:timeLineWidget,
+        container:d3.select('.lbp-element')
+    })
+
+    lbpWidget.render();
+
+
+
+    for(var i=0; i<200; i++){
+        (function(tmpi){
+            setTimeout(function(){
+                timeLineWidget.setOffset(tmpi*-1);
+                lbpWidget.renderTree();
+            }, tmpi*100)
+        })(i)
+
+    }
 
     setTimeout(function () {
-        widget.setOffset(4000);
-        //widget.setConfigs({scale:2})
+        timeLineWidget.setConfigs({scale:1})
     }, 1000)
+
+/*
+    for(var i=0; i<200; i++){
+        (function(tmpi){
+            setTimeout(function(){
+                timeLineWidget.setOffset(tmpi*2);
+                console.log(tmpi);
+            }, tmpi*50)
+        })(i)
+
+    }
+
+    setTimeout(function () {
+        timeLineWidget.setOffset(4000);
+        timeLineWidget.setConfigs({scale:1})
+    }, 1000)*/
+/*
+
+
+
+
 
    setTimeout(function () {
         //widget.setOffset(4000);
@@ -93,7 +142,7 @@
     setTimeout(function () {
         //widget.setOffset(4000);
         //widget.setConfigs({scale:2})
-    }, 7000)
+    }, 7000)*/
 </script>
 
 </body>
