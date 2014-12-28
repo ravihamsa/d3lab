@@ -45,51 +45,48 @@
 <script src="data.js"></script>
 <script src="timeline.js"></script>
 <script src="lbpElement.js"></script>
+<script src="engine.js"></script>
 
 <script>
 
 
 
-
     $element = [document.getElementById('timeLine')];
-    var scaleArray = ['day', 'month', 'quarter', 'year']
-    $scope = {
-        scale: 0
-    }
+
+
+
+
 
 
     var timeLineWidget = new TimeLineWidget({
-        container: d3.select($element[0]),
-        scale: $scope.scale,
-        dayWidth: 25,
-        rootHeight:400,
-        startDate: new Date(2010, 11, 1)
+        container: d3.select($element[0])
     })
 
-    timeLineWidget.render();
-
+    visEngine.add('timeLine', timeLineWidget);
 
     var lbpWidget = new LBPTree({
-        timeLine:timeLineWidget,
         container:d3.select('.lbp-element')
     })
 
-    lbpWidget.render();
+    visEngine.add('lbp', lbpWidget);
+    visEngine.start();
 
 
 
-    for(var i=0; i<200; i++){
+
+
+    for(var i=0; i<20; i++){
         (function(tmpi){
             setTimeout(function(){
-                timeLineWidget.setOffset(tmpi*-1);
-                lbpWidget.renderTree();
+                visEngine.setConfigs({offset:tmpi*1});
+                //lbpWidget.renderTree();
             }, tmpi*100)
         })(i)
 
     }
 
     setTimeout(function () {
-        timeLineWidget.setConfigs({scale:1})
+        visEngine.setConfigs({scale:1})
     }, 1000)
 
 /*

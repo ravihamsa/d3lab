@@ -4,22 +4,19 @@
     var barHeight = 50;
 
     var LBPTree = function(config){
-        this.config = config;
-        var timeLine = this.timeLine = config.timeLine;
-        this.rootWidth = timeLine.rootWidth;
-        this.rootHeight = timeLine.gridHeight;
-        this.initialize();
+        this.container = config.container;
     }
 
 
     LBPTree.prototype = {
         initialize:function(){
-            this.computeConfigs();
+            //var config = this.engine.getConfigs();
+            //this.computeConfigs();
             this.nodeIndex = 100;
         },
 
         computeConfigs: function () {
-            var config = this.config;
+            var config = this.engine.getConfigs();
             var timeLine = config.timeLine;
             this.timeLineHeight = timeLine.timeLineHeight;
             this.xScale = timeLine.xScale;
@@ -68,7 +65,7 @@
             visit(this.rootNode);
 
             var nodes = tree(this.rootNode);
-            var heightOffset = 0;
+            var heightOffset = -barHeight;
 
             nodes.forEach(function(n, i){
                 if(n.groupType === 'root' || n.groupType === 'el-code-2'){
